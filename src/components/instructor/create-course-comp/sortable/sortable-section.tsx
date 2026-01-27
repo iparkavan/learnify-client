@@ -77,7 +77,7 @@ interface SortableSectionProps {
   setOpenAccordionSections: Dispatch<SetStateAction<string[]>>;
   onDeleteLecture: (sectionId: string, lectureId: string) => void;
   onOpenContentModal: (sectionId: string, lecture: Lecture) => void;
-  onReorderLectures: (sectionId: string, newLectureOrder: string[]) => void;
+  onReorderlectures: (sectionId: string, newLectureOrder: string[]) => void;
 }
 
 export const SortableSection = ({
@@ -89,7 +89,7 @@ export const SortableSection = ({
   onUpdateLecture,
   onDeleteLecture,
   onOpenContentModal,
-  onReorderLectures,
+  onReorderlectures,
   openAccordionSections,
   setOpenAccordionSections,
 }: SortableSectionProps) => {
@@ -123,16 +123,16 @@ export const SortableSection = ({
   const handleLectureDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
-      const oldIndex = section.Lectures.findIndex(
+      const oldIndex = section.lectures.findIndex(
         (l: Lecture) => l.id === active.id,
       );
-      const newIndex = section.Lectures.findIndex(
+      const newIndex = section.lectures.findIndex(
         (l: Lecture) => l.id === over.id,
       );
-      const newLectureOrder = Array.from(section.Lectures.map((l) => l.id));
+      const newLectureOrder = Array.from(section.lectures.map((l) => l.id));
       const [movedLecture] = newLectureOrder.splice(oldIndex, 1);
       newLectureOrder.splice(newIndex, 0, movedLecture);
-      onReorderLectures(section.id, newLectureOrder);
+      onReorderlectures(section.id, newLectureOrder);
     }
   };
 
@@ -151,7 +151,7 @@ export const SortableSection = ({
     }
   };
 
-  const totalDuration = section.Lectures.reduce((acc, l) => {
+  const totalDuration = section.lectures.reduce((acc, l) => {
     const [mins] = l.duration.split(":").map(Number);
     return acc + (mins || 0);
   }, 0);
@@ -207,7 +207,7 @@ export const SortableSection = ({
 
                 {/* Stats */}
                 <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>{section.Lectures.length} lectures</span>
+                  <span>{section.lectures.length} lectures</span>
                   {totalDuration > 0 && (
                     <>
                       <span>•</span>
@@ -243,7 +243,7 @@ export const SortableSection = ({
             </div>
           </div>
 
-          {/* Lectures - Collapsible Content */}
+          {/* lectures - Collapsible Content */}
           <AccordionContent className="flex p-4 flex-col gap-4 text-balance">
             <motion.div
               className=" space-y-2"
@@ -256,11 +256,11 @@ export const SortableSection = ({
                 onDragEnd={handleLectureDragEnd}
               >
                 <SortableContext
-                  items={section.Lectures.map((l) => l.id)}
+                  items={section.lectures.map((l) => l.id)}
                   strategy={verticalListSortingStrategy}
                 >
                   <AnimatePresence mode="popLayout">
-                    {section.Lectures.map((lecture) => {
+                    {section.lectures.map((lecture) => {
                       const lectureWithDefaults = {
                         ...lecture,
                         isExpanded: lecture.isExpanded ?? false,
@@ -286,7 +286,7 @@ export const SortableSection = ({
                 </SortableContext>
               </DndContext>
 
-              {section.Lectures.length === 0 && (
+              {section.lectures.length === 0 && (
                 <div className="text-center text-muted-foreground text-sm">
                   No lectures yet. Add your first lecture below.
                 </div>

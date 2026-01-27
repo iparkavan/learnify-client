@@ -25,6 +25,7 @@ import {
   DollarSign,
   Eye,
   Image,
+  Loader,
   Megaphone,
   MessageSquare,
   Plus,
@@ -64,6 +65,8 @@ import { arrayMove } from "@dnd-kit/sortable";
 import axiosClient from "@/utils/axios-client";
 import axios from "axios";
 import { CloudinaryUploadResponse } from "@/types/cloudinary-types";
+import { useMutation } from "@tanstack/react-query";
+import { saveFullCourseMutateFn } from "@/apis/course-api";
 
 export interface Lecture {
   id: string;
@@ -79,7 +82,7 @@ export interface Section {
   id: string;
   title: string;
   objective: string;
-  Lectures: Lecture[];
+  lectures: Lecture[];
 }
 
 const categories = [
@@ -93,7 +96,7 @@ const categories = [
   "Design",
 ];
 
-const levels = ["Beginner", "Intermediate", "Advanced", "All Levels"];
+const levels = ["BEGINNER", "INTERMEDIATE", "ADVANCED", "All LEVELS"];
 const languages = [
   "English",
   "Spanish",
@@ -214,6 +217,11 @@ const CreateCourse = () => {
     setOpenAccordionSections(sections.map((s) => String(s.id)));
   }, [sections]);
 
+  const { mutate: saveCourseMutate, isPending: isSavePending } = useMutation({
+    mutationFn: saveFullCourseMutateFn,
+    mutationKey: ["save-course"],
+  });
+
   const form = useForm({
     resolver: zodResolver(courseSchema),
     defaultValues: {
@@ -246,8 +254,6 @@ const CreateCourse = () => {
       }
 
       setImageUploading(true);
-      const preview = URL.createObjectURL(file);
-      setCourseImage({ file, preview });
 
       try {
         const sigRes = await axiosClient.get(
@@ -266,16 +272,10 @@ const CreateCourse = () => {
         const res = await axios.post<CloudinaryUploadResponse>(
           `https://api.cloudinary.com/v1_1/${sigData.cloudName}/image/upload`,
           formData,
-          // {
-          //   onUploadProgress: (e) => {
-          //     const percent = Math.round((e.loaded * 100) / (e.total || 1));
-          //     setCourseImage((prev) => ({
-          //       ...prev,
-          //       uploadProgress: percent,
-          //     }));
-          //   },
-          // },
         );
+
+        const preview = URL.createObjectURL(file);
+        setCourseImage({ file, preview });
 
         const imageUrl = res.data.secure_url;
 
@@ -290,16 +290,9 @@ const CreateCourse = () => {
         toast("Upload failed", {
           description: "Image upload failed. Try again.",
         });
+      } finally {
+        setImageUploading(false);
       }
-
-      // Simulate upload delay
-      // setTimeout(() => {
-      //   setCourseImage({ file, preview });
-      //   setImageUploading(false);
-      //   toast("Image uploaded!", {
-      //     description: "Your course image has been uploaded successfully.",
-      //   });
-      // }, 1000);
     }
   };
 
@@ -366,6 +359,7 @@ const CreateCourse = () => {
     if (courseImage?.preview) {
       URL.revokeObjectURL(courseImage.preview);
     }
+    // setImageUploading(false);
     setCourseImage(null);
   };
 
@@ -388,7 +382,7 @@ const CreateCourse = () => {
   const onAddSectionHandler = () => {
     setSections((prev) => [
       ...prev,
-      { id: generateId(), title: "", objective: "", Lectures: [] },
+      { id: generateId(), title: "", objective: "", lectures: [] },
     ]);
   };
 
@@ -412,8 +406,8 @@ const CreateCourse = () => {
         sec.id === sectionId
           ? {
               ...sec,
-              Lectures: [
-                ...sec.Lectures,
+              lectures: [
+                ...sec.lectures,
                 {
                   id: generateId(),
                   title: "",
@@ -438,7 +432,7 @@ const CreateCourse = () => {
         sec.id === sectionId
           ? {
               ...sec,
-              Lectures: sec.Lectures.map((lec) =>
+              lectures: sec.lectures.map((lec) =>
                 lec.id === lectureId ? { ...lec, ...updates } : lec,
               ),
             }
@@ -453,7 +447,7 @@ const CreateCourse = () => {
         sec.id === sectionId
           ? {
               ...sec,
-              Lectures: sec.Lectures.filter((lec) => lec.id !== lectureId),
+              lectures: sec.lectures.filter((lec) => lec.id !== lectureId),
             }
           : sec,
       ),
@@ -503,9 +497,9 @@ const CreateCourse = () => {
         if (s.id === sectionId) {
           return {
             ...s,
-            Lectures: newLectureOrder
+            lectures: newLectureOrder
               .map((lectureId) =>
-                s.Lectures.find((lec) => lec.id === lectureId),
+                s.lectures.find((lec) => lec.id === lectureId),
               )
               .filter((lec): lec is Lecture => !!lec),
           };
@@ -518,18 +512,60 @@ const CreateCourse = () => {
     });
   };
 
-  const onSubmit = (data: CourseFormData) => {
+  const onSubmit = (formData: CourseFormData) => {
+    if (isSavePending) return;
+
     console.log("Course data:", {
-      ...data,
+      ...formData,
       sections,
       learningObjectives,
       prerequisites,
       targetAudience,
     });
+
+    const payload = {
+      courseData: {
+        course: {
+          title: formData.title,
+          subtitle: formData.subtitle,
+          description: formData.description,
+          category: formData.category,
+          subcategory: formData.subcategory,
+          thumbnail: formData.thumbnail,
+          promoVideo: formData.promoVideo,
+          level: formData.level,
+          language: formData.language,
+          price: parseFloat(formData.price) || 0,
+        },
+        sections: sections.map((section) => ({
+          id: section.id,
+          title: section.title,
+          objective: section.objective,
+          lectures: section.lectures.map((lecture) => ({
+            id: lecture.id,
+            title: lecture.title,
+            type: lecture.type,
+            duration: lecture.duration,
+            content_url: lecture.content?.video?.url,
+            has_content: lecture.hasContent ?? false,
+            order_index: 0,
+            isExpanded: false,
+          })),
+        })),
+      },
+    };
+
+    saveCourseMutate(payload, {
+      onSuccess: () => {
+        toast("Course Saved", {
+          description: "Course have been saved as draft",
+        });
+      },
+    });
   };
 
   const totalLectures = sections.reduce(
-    (acc, sec) => acc + sec.Lectures.length,
+    (acc, sec) => acc + sec.lectures.length,
     0,
   );
 
@@ -694,9 +730,17 @@ const CreateCourse = () => {
                     </Button>
 
                     {/* ✅ NOW THIS WORKS */}
-                    <Button type="submit">
-                      <Save className="mr-2 h-4 w-4" />
-                      Save
+                    <Button type="submit" disabled={isSavePending}>
+                      {isSavePending ? (
+                        <>
+                          <Loader className="animate-spin" /> Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="mr-2 h-4 w-4" />
+                          Save
+                        </>
+                      )}
                     </Button>
                     <Button className="bg-gradient-primary hover:opacity-90">
                       Submit for Review

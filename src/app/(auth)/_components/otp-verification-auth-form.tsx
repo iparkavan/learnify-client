@@ -136,11 +136,9 @@ const OtpVerificationAuthForm = ({
           setCanResend(false);
         },
         onError: (error: any) => {
-          console.log(error);
+          console.log(error?.response?.data?.message);
           if (error?.response?.status === 404) {
-            setError(
-              "There was a problem logging in. Check your email or create an account.",
-            );
+            setError(error?.response?.data?.message);
           }
         },
       },

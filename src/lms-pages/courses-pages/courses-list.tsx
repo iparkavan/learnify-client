@@ -245,7 +245,7 @@ const CourseList = ({
       )}
 
       {/* Hero Section */}
-      <section className="bg-gradient-hero pt-6 pb-6">
+      <section className="pt-6 pb-6">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

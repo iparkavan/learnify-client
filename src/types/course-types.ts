@@ -1,3 +1,5 @@
+import { Lecture } from "@/lms-pages/instructor/course-creation/create-course";
+
 export interface User {
   id: string;
   name: string;
@@ -66,3 +68,24 @@ export interface Course {
 export interface CoursesResponse {
   courses: Course[];
 }
+
+export type SaveCoursePayload = {
+  courseData: {
+    course: {
+      title: string;
+      subtitle?: string;
+      description: string;
+      category: string;
+      subcategory?: string;
+      level: string;
+      language: string;
+      price: number;
+    };
+    sections: {
+      id: string;
+      title: string;
+      objective?: string;
+      lectures: Lecture[];
+    }[];
+  };
+};

@@ -202,7 +202,10 @@ const CourseLandingPageSection: React.FC<CourseLandingPageSectionProps> = ({
                     </FormControl>
                     <SelectContent className="bg-popover border-border">
                       {categories.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
+                        <SelectItem
+                          key={cat}
+                          value={"cmkuybg650000uimkbv0pw8du"}
+                        >
                           {cat}
                         </SelectItem>
                       ))}
