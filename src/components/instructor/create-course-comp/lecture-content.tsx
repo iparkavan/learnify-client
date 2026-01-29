@@ -36,13 +36,15 @@ import {
 import axios, { AxiosProgressEvent } from "axios";
 import { CloudinaryUploadResponse } from "@/types/cloudinary-types";
 import axiosClient from "@/utils/axios-client";
+import { LectureType } from "@/lms-pages/instructor/course-creation/create-course";
+import { minutesToSeconds } from "@/utils/contants";
 
 // Types
 export interface VideoContent {
   file?: File;
   fileName?: string;
   fileSize?: string;
-  duration?: string;
+  duration?: number;
   uploadProgress?: number;
   isUploaded?: boolean;
   url?: string;
@@ -91,10 +93,12 @@ export interface LectureContent {
   description?: string;
 }
 
+// Enum for TS
+
 interface LectureContentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  lectureType: "video" | "text" | "quiz" | "coding" | "assignment";
+  lectureType: LectureType;
   lectureTitle: string;
   initialContent?: LectureContent;
   onSave: (content: LectureContent) => void;
@@ -205,7 +209,7 @@ export const LectureContentModal = ({
         uploadProgress: 100,
         isUploaded: true,
         url: res.data.secure_url,
-        duration: String(res.data.duration),
+        duration: minutesToSeconds(res.data.duration),
       }));
     } catch (error) {
       console.error("Upload failed", error);
@@ -283,13 +287,13 @@ export const LectureContentModal = ({
       resources,
     };
 
-    if (lectureType === "video") {
+    if (lectureType === LectureType.VIDEO) {
       content.video = videoContent;
-    } else if (lectureType === "quiz") {
+    } else if (lectureType === LectureType.QUIZ) {
       content.quiz = quizContent;
-    } else if (lectureType === "coding") {
+    } else if (lectureType === LectureType.CODING) {
       content.coding = codingContent;
-    } else if (lectureType === "assignment") {
+    } else if (lectureType === LectureType.ASSIGNMENT) {
       content.assignment = assignmentContent;
     }
 
@@ -896,14 +900,19 @@ export const LectureContentModal = ({
 
   const getModalTitle = () => {
     switch (lectureType) {
-      case "video":
+      case LectureType.VIDEO:
         return "Add Lecture Content";
-      case "quiz":
+
+      case LectureType.QUIZ:
         return "Create Quiz";
-      case "coding":
+
+      case LectureType.CODING:
         return "Create Coding Exercise";
-      case "assignment":
+
+      case LectureType.ASSIGNMENT:
         return "Create Assignment";
+
+      case LectureType.TEXT:
       default:
         return "Add Content";
     }
@@ -911,14 +920,19 @@ export const LectureContentModal = ({
 
   const getModalIcon = () => {
     switch (lectureType) {
-      case "video":
+      case LectureType.VIDEO:
         return <Video className="h-5 w-5" />;
-      case "quiz":
+
+      case LectureType.QUIZ:
         return <HelpCircle className="h-5 w-5" />;
-      case "coding":
+
+      case LectureType.CODING:
         return <Code className="h-5 w-5" />;
-      case "assignment":
+
+      case LectureType.ASSIGNMENT:
         return <BookOpen className="h-5 w-5" />;
+
+      case LectureType.TEXT:
       default:
         return <FileText className="h-5 w-5" />;
     }
@@ -951,12 +965,18 @@ export const LectureContentModal = ({
 
         {/* SCROLLABLE BODY */}
         <div className="h-[75vh] overflow-y-auto p-6 space-y-6">
-          {lectureType === "video" && renderVideoContent()}
+          {/* {lectureType === "video" && renderVideoContent()}
           {lectureType === "quiz" && renderQuizContent()}
           {lectureType === "coding" && renderCodingContent()}
           {lectureType === "assignment" && renderAssignmentContent()}
 
-          {lectureType !== "quiz" && renderResources()}
+          {lectureType !== "quiz" && renderResources()} */}
+          {lectureType === LectureType.VIDEO && renderVideoContent()}
+          {lectureType === LectureType.QUIZ && renderQuizContent()}
+          {lectureType === LectureType.CODING && renderCodingContent()}
+          {lectureType === LectureType.ASSIGNMENT && renderAssignmentContent()}
+
+          {lectureType !== LectureType.QUIZ && renderResources()}
         </div>
 
         {/* FOOTER */}

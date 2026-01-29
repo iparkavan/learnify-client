@@ -68,11 +68,19 @@ import { CloudinaryUploadResponse } from "@/types/cloudinary-types";
 import { useMutation } from "@tanstack/react-query";
 import { saveFullCourseMutateFn } from "@/apis/course-api";
 
+export enum LectureType {
+  VIDEO = "video",
+  TEXT = "text",
+  QUIZ = "quiz",
+  CODING = "coding",
+  ASSIGNMENT = "assignment",
+}
+
 export interface Lecture {
   id: string;
   title: string;
-  type: "video" | "text" | "quiz" | "coding" | "assignment";
-  duration: string;
+  type: LectureType;
+  duration: number;
   isExpanded: boolean;
   content?: LectureContent;
   hasContent?: boolean;
@@ -400,7 +408,10 @@ const CreateCourse = () => {
   };
 
   // Lecture Handlers
-  const onAddLecture = (sectionId: string, type: Lecture["type"] = "video") => {
+  const onAddLecture = (
+    sectionId: string,
+    type: Lecture["type"] = LectureType.VIDEO,
+  ) => {
     setSections((prevSec) =>
       prevSec.map((sec, index) =>
         sec.id === sectionId
@@ -412,7 +423,7 @@ const CreateCourse = () => {
                   id: generateId(),
                   title: "",
                   type,
-                  duration: "",
+                  duration: 0,
                   isExpanded: true,
                 },
               ],
@@ -545,7 +556,7 @@ const CreateCourse = () => {
             id: lecture.id,
             title: lecture.title,
             type: lecture.type,
-            duration: lecture.duration,
+            duration: +lecture.duration,
             content_url: lecture.content?.video?.url,
             has_content: lecture.hasContent ?? false,
             order_index: 0,
@@ -710,7 +721,7 @@ const CreateCourse = () => {
         <div className="flex-1 flex flex-col">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="h-full">
-              <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
                 <div className="flex items-center justify-between px-6 py-4">
                   <div className="flex items-center gap-4">
                     <SidebarTrigger className="hover:text-white" />

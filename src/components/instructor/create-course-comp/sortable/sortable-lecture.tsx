@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ReactNode } from "react";
+import { LectureType } from "@/lms-pages/instructor/course-creation/create-course";
 
 interface Lecture {
   id: string;
   title: string;
-  type: "video" | "text" | "quiz" | "coding" | "assignment";
-  duration: string;
+  type: LectureType;
+  duration: number;
   isExpanded?: boolean;
   hasContent?: boolean;
 }
@@ -93,7 +94,7 @@ export const SortableLecture = ({
           variant="ghost"
           size="sm"
           onClick={() => onOpenContentModal(sectionId, lecture)}
-          className="text-primary hover:text-primary"
+          className="text-primary hover:text-white transition-colors"
         >
           <Upload className="h-4 w-4 mr-1" />
           {lecture.hasContent ? "Edit" : "Add"} Content

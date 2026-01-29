@@ -36,6 +36,7 @@ import {
 } from "@dnd-kit/sortable";
 import {
   Lecture,
+  LectureType,
   Section,
 } from "@/lms-pages/instructor/course-creation/create-course";
 import { SortableLecture } from "./sortable-lecture";
@@ -138,23 +139,30 @@ export const SortableSection = ({
 
   const getLectureIcon = (type: Lecture["type"]) => {
     switch (type) {
-      case "video":
+      case LectureType.VIDEO:
         return <Play className="h-4 w-4" />;
-      case "text":
+
+      case LectureType.TEXT:
         return <FileText className="h-4 w-4" />;
-      case "quiz":
+
+      case LectureType.QUIZ:
         return <HelpCircle className="h-4 w-4" />;
-      case "coding":
+
+      case LectureType.CODING:
         return <Code className="h-4 w-4" />;
-      case "assignment":
+
+      case LectureType.ASSIGNMENT:
         return <BookOpen className="h-4 w-4" />;
+
+      default:
+        return null; // optional fallback
     }
   };
 
-  const totalDuration = section.lectures.reduce((acc, l) => {
-    const [mins] = l.duration.split(":").map(Number);
-    return acc + (mins || 0);
-  }, 0);
+  const totalDuration = section.lectures.reduce(
+    (acc, l) => acc + l.duration,
+    0,
+  );
 
   return (
     <motion.div
@@ -297,7 +305,7 @@ export const SortableSection = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onAddLecture(section.id, "video")}
+                  onClick={() => onAddLecture(section.id, LectureType.VIDEO)}
                   className="border-dashed"
                 >
                   <Plus className="h-4 w-4 mr-1" />
@@ -306,7 +314,7 @@ export const SortableSection = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onAddLecture(section.id, "quiz")}
+                  onClick={() => onAddLecture(section.id, LectureType.QUIZ)}
                   className="border-dashed"
                 >
                   <Plus className="h-4 w-4 mr-1" />
@@ -315,7 +323,7 @@ export const SortableSection = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onAddLecture(section.id, "coding")}
+                  onClick={() => onAddLecture(section.id, LectureType.CODING)}
                   className="border-dashed"
                 >
                   <Plus className="h-4 w-4 mr-1" />
@@ -324,7 +332,9 @@ export const SortableSection = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onAddLecture(section.id, "assignment")}
+                  onClick={() =>
+                    onAddLecture(section.id, LectureType.ASSIGNMENT)
+                  }
                   className="border-dashed"
                 >
                   <Plus className="h-4 w-4 mr-1" />
