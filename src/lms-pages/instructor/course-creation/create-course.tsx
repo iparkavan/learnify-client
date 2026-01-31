@@ -69,11 +69,11 @@ import { useMutation } from "@tanstack/react-query";
 import { saveFullCourseMutateFn } from "@/apis/course-api";
 
 export enum LectureType {
-  VIDEO = "video",
-  TEXT = "text",
-  QUIZ = "quiz",
-  CODING = "coding",
-  ASSIGNMENT = "assignment",
+  VIDEO = "VIDEO",
+  TEXT = "TEXT",
+  QUIZ = "QUIZ",
+  CODING = "CODING",
+  ASSIGNMENT = "ASSIGNMENT",
 }
 
 export interface Lecture {

@@ -204,7 +204,7 @@ const CourseLandingPageSection: React.FC<CourseLandingPageSectionProps> = ({
                       {categories.map((cat) => (
                         <SelectItem
                           key={cat}
-                          value={"cmkuybg650000uimkbv0pw8du"}
+                          value={"cml13kfjh0000d4uiq16e94l7"}
                         >
                           {cat}
                         </SelectItem>
