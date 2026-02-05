@@ -3,6 +3,7 @@ import {
   containerVariants,
   itemVariants,
   Lecture,
+  LectureType,
   Section,
 } from "../../../lms-pages/instructor/course-creation/create-course";
 import React, { Dispatch, SetStateAction } from "react";
@@ -26,15 +27,15 @@ import { SortableSection } from "./sortable/sortable-section";
 
 const getLectureIcon = (type: Lecture["type"]) => {
   switch (type) {
-    case "video":
+    case LectureType.VIDEO:
       return <Play className="h-4 w-4" />;
-    case "text":
+    case LectureType.TEXT:
       return <FileText className="h-4 w-4" />;
-    case "quiz":
+    case LectureType.QUIZ:
       return <HelpCircle className="h-4 w-4" />;
-    case "coding":
+    case LectureType.CODING:
       return <Code className="h-4 w-4" />;
-    case "assignment":
+    case LectureType.ASSIGNMENT:
       return <BookOpen className="h-4 w-4" />;
   }
 };
@@ -141,7 +142,7 @@ const CurriculumSection: React.FC<CurriculumSectionProps> = ({
                   onUpdateLecture={onUpdatelecture}
                   onDeleteLecture={onDeletelecture}
                   onOpenContentModal={openContentModal}
-                  onReorderLectures={onReorderLectures}
+                  onReorderlectures={onReorderLectures}
                   openAccordionSections={openAccordionSections}
                   setOpenAccordionSections={setOpenAccordionSections}
                 />
