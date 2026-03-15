@@ -347,8 +347,7 @@ const CourseList = ({
             </div>
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {courses &&
-              courses.length > 0 &&
+            {courses && courses.length > 0 ? (
               courses.map((course, index) => (
                 <motion.div
                   key={course.id}
@@ -440,7 +439,10 @@ const CourseList = ({
                     </Card>
                   </Link>
                 </motion.div>
-              ))}
+              ))
+            ) : (
+              <div>No Course to diplay</div>
+            )}
           </div>
         </div>
       </section>
