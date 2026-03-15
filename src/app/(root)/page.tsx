@@ -1,7 +1,5 @@
 import HeadFootLayout from "@/components/common/head-foot-layout";
-import Footer from "@/lms-pages/landing-page/Footer";
 import LandingPage from "@/lms-pages/landing-page/landing";
-import Navbar from "@/lms-pages/landing-page/NavBar";
 import { Course } from "@/types/course-types";
 import { safeFetch } from "@/utils/safe-fetch";
 

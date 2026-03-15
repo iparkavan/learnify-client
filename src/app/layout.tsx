@@ -20,8 +20,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "MaxSkill.ai",
-    template: "%s - MaxSkill.ai",
+    default: "Learnify",
+    template: "%s - Learnify",
   },
   description: "LMS Platform",
   twitter: {

@@ -1,7 +1,7 @@
 export async function safeFetch<T>(
   url: string,
   options: RequestInit = {},
-  fallback: T
+  fallback: T,
 ): Promise<{ data: T; error: string | null }> {
   try {
     const controller = new AbortController();
@@ -16,14 +16,14 @@ export async function safeFetch<T>(
 
     if (!res.ok) {
       const message = `API Error: ${res.status} ${res.statusText}`;
-      console.error(message);
+      console.log(message);
       return { data: fallback, error: message };
     }
 
     const json = await res.json();
     return { data: json as T, error: null };
   } catch (err: any) {
-    console.error("Fetch failed:", err.message || err);
+    console.log("Fetch failed:", err.message || err);
 
     return {
       data: fallback,

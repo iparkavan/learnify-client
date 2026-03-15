@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
-import { ACCESS_TOKEN } from "@/utils/contants";
+import { ACCESS_TOKEN, UserRole } from "@/utils/contants";
 import axiosClient from "@/utils/axios-client";
 import { useUserInfoStore } from "@/store/userInfo-store";
 
@@ -28,7 +28,27 @@ export default function GoogleSuccess() {
       .get("/auth/profile")
       .then((res) => {
         setUser(res.data.user);
-        router.replace("/"); // Replace avoids showing this page in history
+        console.log("res.data", res.data);
+        const { user } = res.data;
+        // router.replace("/"); // Replace avoids showing this page in history
+        if (user.role === UserRole.STUDENT) {
+          // if (!user.studentProfile) {
+          //   window.location.replace("/student-profile-setup");
+          //   return;
+          // }
+          window.location.replace("/");
+          return;
+        }
+
+        // INSTRUCTOR
+        if (user.role === UserRole.INSTRUCTOR) {
+          // if (!user.instructorProfile) {
+          //   window.location.replace("/instructor-profile-setup");
+          //   return;
+          // }
+          window.location.replace("/instructor");
+          return;
+        }
       })
       .catch(() => {
         router.replace("/login");
