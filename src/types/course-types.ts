@@ -1,5 +1,3 @@
-import { Lecture } from "@/lms-pages/instructor/course-creation/create-course";
-
 export interface User {
   id: string;
   name: string;
@@ -31,10 +29,34 @@ export interface Category {
   metaImage?: string | null;
 }
 
+export type Section = {
+  id: string;
+  title: string;
+  order: number;
+  courseId: string;
+  lectures: Lecture[];
+
+  _count: {
+    lectures: number;
+  };
+};
+
 export interface CourseCount {
   reviews: number;
   enrollments: number;
+  sections: number;
 }
+
+export type Lecture = {
+  id: string;
+  title: string;
+  order: number;
+  sectionId: string;
+  videoUrl?: string | null;
+  duration?: number | null;
+  createdAt?: string;
+  updatedAt?: string;
+};
 
 export interface Course {
   id: string;
@@ -52,6 +74,7 @@ export interface Course {
   published: boolean;
   totalDuration: number;
   totalLectures: number;
+  sections: Section[];
 
   seoTitle?: string | null;
   seoDescription?: string | null;

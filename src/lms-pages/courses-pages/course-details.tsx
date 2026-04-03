@@ -55,7 +55,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course }) => {
   const nameInitials = getInitialConverter(course.instructor.user.name);
   const discountPercentage = getDiscountPercentage(
     course.price,
-    course.originalPrice
+    course.originalPrice,
   );
 
   const { data: isEnrollmentStatus, isPending: isEnrollmentStatusPending } =
@@ -217,7 +217,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course }) => {
       duration: lesson.duration,
       timestamp: sectionIndex * 600 + lessonIndex * 180, // Mock timestamps
       completed: lessonIndex < 2,
-    }))
+    })),
   );
 
   console.log("course", course.instructor.user.name);
@@ -242,7 +242,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course }) => {
                     chapters: videoChapters,
                     videoUrl:
                       "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                  })
+                  }),
                 );
 
                 router.push(`/courses/${id}/watch`);
@@ -322,7 +322,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course }) => {
                   <div className="flex items-center gap-2">
                     <BookOpen className="h-4 w-4" />
                     <span className="text-xs md:text-sm">
-                      {courseData.lectures} lectures
+                      {course.totalLectures} lectures
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -453,13 +453,78 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course }) => {
                 <CardHeader>
                   <CardTitle className="text-2xl">Course content</CardTitle>
                   <CardDescription>
-                    {courseContent.length} sections •{" "}
+                    {/* {course._count.sections} sections •{" "}
                     {courseContent.reduce((acc, s) => acc + s.lectures, 0)}{" "}
-                    lectures • 42h total length
+                    lectures • 42h total length */}
+                    {course._count.sections} sections •{" "}
+                    {course.sections.map((sec) => sec._count.lectures)} lectures
+                    • {course.totalDuration} mins total length
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Accordion type="single" collapsible className="w-full">
+                    {course.sections.map((section, index) => {
+                      // calculate section duration
+                      const sectionDuration = section.lectures.reduce(
+                        (acc, lec) => acc + (lec.duration || 0),
+                        0,
+                      );
+
+                      return (
+                        <AccordionItem
+                          key={section.id}
+                          value={`section-${index}`}
+                        >
+                          <AccordionTrigger className="hover:no-underline">
+                            <div className="flex items-center justify-between w-full pr-4">
+                              <span className="font-semibold text-left">
+                                {section.title}
+                              </span>
+
+                              <span className="text-sm text-muted-foreground">
+                                {section._count.lectures} lectures •{" "}
+                                {sectionDuration} mins
+                              </span>
+                            </div>
+                          </AccordionTrigger>
+
+                          <AccordionContent>
+                            <div className="space-y-2 pt-2">
+                              {section.lectures.map((lecture) => (
+                                <div
+                                  key={lecture.id}
+                                  className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors cursor-pointer"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <PlayCircle className="h-4 w-4 text-muted-foreground" />
+
+                                    <span className="text-sm">
+                                      {lecture.title}
+                                    </span>
+
+                                    {/* Optional preview flag (if you have it) */}
+                                    {/* {lecture.preview && (
+                                      <Badge
+                                        variant="outline"
+                                        className="text-xs"
+                                      >
+                                        Preview
+                                      </Badge>
+                                    )} */}
+                                  </div>
+
+                                  <span className="text-sm text-muted-foreground">
+                                    {lecture.duration ?? 0} mins
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      );
+                    })}
+                  </Accordion>
+                  {/* <Accordion type="single" collapsible className="w-full">
                     {courseContent.map((section, index) => (
                       <AccordionItem key={index} value={`section-${index}`}>
                         <AccordionTrigger className="hover:no-underline">
@@ -502,7 +567,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course }) => {
                         </AccordionContent>
                       </AccordionItem>
                     ))}
-                  </Accordion>
+                  </Accordion> */}
                 </CardContent>
               </Card>
 
@@ -717,7 +782,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course }) => {
                         chapters: videoChapters,
                         videoUrl:
                           "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                      })
+                      }),
                     );
 
                     router.push(`/courses/${id}/watch`);
