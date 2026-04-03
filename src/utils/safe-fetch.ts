@@ -3,6 +3,7 @@ export async function safeFetch<T>(
   options: RequestInit = {},
   fallback: T,
 ): Promise<{ data: T; error: string | null }> {
+  console.log("Final URL:", url);
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000); // 8s timeout

@@ -7,8 +7,8 @@ export default function GlobalError({ error, reset }: any) {
   const router = useRouter();
 
   return (
-    <html>
-      <body className="flex flex-col items-center justify-center h-screen">
+    <div>
+      <div className="flex flex-col items-center justify-center h-screen">
         <h1 className="text-3xl font-bold mb-4 text-red-600">
           Something went wrong
         </h1>
@@ -19,7 +19,7 @@ export default function GlobalError({ error, reset }: any) {
         >
           Go to home
         </Button>
-      </body>
-    </html>
+      </div>
+    </div>
   );
 }

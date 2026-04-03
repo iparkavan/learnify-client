@@ -7,6 +7,6 @@ export const getAllCourses = async (): Promise<{}> => {
 };
 
 export const saveFullCourseMutateFn = async (payload: SaveCoursePayload) => {
-  const res = await axiosClient.post(`/course/save-full-course`, payload);
+  const res = await axiosClient.post(`/courses/save-full-course`, payload);
   return res.data;
 };

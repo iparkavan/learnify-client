@@ -12,13 +12,14 @@ interface CoursePageProps {
 const page = async ({ params }: CoursePageProps) => {
   const resolvedParams = await params; // unwrap the promise
   const { slug } = resolvedParams;
+  console.log("slug", slug);
 
-  const API_URL = process.env.API_URL || "http://localhost:5000/api";
+  const API_URL = "http://localhost:5000/api";
 
   const { data: course, error } = await safeFetch<Course>(
     `${API_URL}/courses/${slug}`,
     { cache: "no-store" },
-    {} as Course
+    {} as Course,
   );
 
   console.log("course details", course, error);
