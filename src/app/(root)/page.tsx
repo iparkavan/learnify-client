@@ -6,7 +6,6 @@ import { safeFetch } from "@/utils/safe-fetch";
 export default async function Home() {
   const API_URL =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-  console.log(process.env.NEXT_PUBLIC_API_URL);
 
   const { data: courses, error } = await safeFetch<Course[]>(
     `${API_URL}/courses`,
