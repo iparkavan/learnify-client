@@ -1,9 +1,6 @@
-import HeadFootLayout from "@/components/common/head-foot-layout";
 import InstructorDashboard from "@/lms-pages/instructor/instructor-dashboard";
-import { Course } from "@/types/course-types";
 import { safeFetch } from "@/utils/safe-fetch";
 import { cookies } from "next/headers";
-import React from "react";
 
 const page = async () => {
   const API_URL =
@@ -25,9 +22,7 @@ const page = async () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* <HeadFootLayout> */}
       <InstructorDashboard courses={courses.instructorCourse} />
-      {/* </HeadFootLayout> */}
     </div>
   );
 };

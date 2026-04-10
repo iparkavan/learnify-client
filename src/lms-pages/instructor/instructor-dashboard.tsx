@@ -160,10 +160,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({
   console.log("courses ==, ", courses);
   return (
     <div className="">
-      {/* Instructor Navbar */}
-      <InstructorNavbar />
-
-      <main className="container mx-auto px-4 py-8">
+      <main className="">
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -235,7 +232,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({
                       transition={{ delay: index * 0.1 }}
                       className="group flex gap-4 p-4 rounded-xl border border-border/50 bg-background/50 hover:bg-secondary/50 hover:border-primary/30 transition-all duration-300"
                     >
-                      <div className="relative w-32 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                      <div className="relative w-32 h-20 rounded-lg overflow-hidden shrink-0">
                         <img
                           src={course.thumbnail}
                           alt={course.title}
@@ -351,7 +348,7 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({
                       transition={{ delay: index * 0.1 }}
                       className="flex gap-3 p-3 rounded-lg hover:bg-secondary/50 transition-colors"
                     >
-                      <div className="flex-shrink-0 w-2 h-2 rounded-full bg-primary mt-2" />
+                      <div className="shrink-0 w-2 h-2 rounded-full bg-primary mt-2" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-foreground">
                           {activity.message}
