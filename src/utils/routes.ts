@@ -7,12 +7,7 @@ export const SIGNUP_ROUTE = `${baseAuthRoute}?${new URLSearchParams({
   action: "signup",
 })}`;
 
-export const PROTECTED_ROUTES = [
-  "/courses/",
-  "/orders",
-  "/admin",
-  "/instructor",
-];
+export const PROTECTED_ROUTES = ["/orders", "/admin", "/instructor"];
 
 export const PUBLIC_PATHS = ["/", "/courses", "/passwordless-auth"];
 
