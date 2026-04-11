@@ -31,6 +31,8 @@ export function UserAvatarDropdownMenu({
 }: UserAvatarDropdownMenuType) {
   const { user } = useUserInfoStore();
 
+  console.log("User in dropdown menu", user);
+
   const initial = getInitialConverter(user?.name || "Guest");
 
   const { clearUser } = useUserInfoStore();

@@ -13,21 +13,11 @@ export default async function Home() {
     [], // fallback value
   );
 
-  // const response = await fetch(`${API_URL}/courses`, {
-  //   cache: "no-store",
-  // });
-
-  // const courses = await response.json();
-
-  console.log("courses", courses);
-
   return (
     <div className="min-h-screen">
-      {/* <Navbar /> */}
       <HeadFootLayout>
         <LandingPage courses={courses} error={error ?? ""} />
       </HeadFootLayout>
-      {/* <Footer /> */}
     </div>
   );
 }

@@ -1,6 +1,4 @@
-import Footer from "../../lms-pages/landing-page/Footer";
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

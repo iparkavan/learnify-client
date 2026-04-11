@@ -1,14 +1,12 @@
-import { StudentProfile, UserInfoProfileType } from "@/types/auth-types";
-import { UserInfoType } from "@/types/user-types";
+import { UserInfoProfileType } from "@/types/auth-types";
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
 // Zustand store state
 interface UserState {
   user: UserInfoProfileType | null;
   setUser: (user: UserInfoProfileType) => void;
   updateStudentProfile: (
-    studentProfile: UserInfoProfileType["studentProfile"]
+    studentProfile: UserInfoProfileType["studentProfile"],
   ) => void;
   clearUser: () => void;
 }
