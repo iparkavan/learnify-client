@@ -43,9 +43,7 @@ export default async function RootLayout({
 
   const token = (await cookieStore).get("access_token")?.value;
 
-  console.log("Token in layout", token);
-
-  let user: any = null;
+  let user: UserInfoProfileType | null = null;
 
   if (token) {
     try {
