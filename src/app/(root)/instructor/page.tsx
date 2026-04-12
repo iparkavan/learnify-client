@@ -1,4 +1,5 @@
 import InstructorDashboard from "@/lms-pages/instructor/instructor-dashboard";
+import { Course } from "@/types/course-types";
 import { safeFetch } from "@/utils/safe-fetch";
 import { cookies } from "next/headers";
 
@@ -9,7 +10,7 @@ const page = async () => {
   const cookiesStore = cookies();
 
   const cookie = (await cookiesStore).toString();
-  const { data: courses } = await safeFetch(
+  const { data: courses } = await safeFetch<{ instructorCourse: Course[] }>(
     `${API_URL}/courses/get-instructor-courses`,
     {
       headers: {
@@ -17,7 +18,7 @@ const page = async () => {
       },
       cache: "no-cache",
     },
-    [],
+    { instructorCourse: [] },
   );
 
   return (

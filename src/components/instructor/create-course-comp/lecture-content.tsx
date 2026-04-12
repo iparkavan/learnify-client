@@ -48,6 +48,7 @@ export interface VideoContent {
   uploadProgress?: number;
   isUploaded?: boolean;
   url?: string;
+  publicId?: string;
 }
 
 export interface QuizQuestion {
@@ -118,8 +119,8 @@ export const LectureContentModal = ({
   const resourceInputRef = useRef<HTMLInputElement>(null);
 
   // Video state
-  const [videoContent, setVideoContent] = useState<VideoContent>(
-    initialContent?.video || {},
+  const [videoContent, setVideoContent] = useState<VideoContent | null>(
+    initialContent?.video || null,
   );
   const [isUploading, setIsUploading] = useState(false);
 
@@ -209,6 +210,7 @@ export const LectureContentModal = ({
         uploadProgress: 100,
         isUploaded: true,
         url: res.data.secure_url,
+        publicId: res.data.public_id,
         duration: minutesToSeconds(res.data.duration),
       }));
     } catch (error) {
@@ -217,6 +219,24 @@ export const LectureContentModal = ({
     } finally {
       setIsUploading(false);
       e.target.value = "";
+    }
+  };
+
+  const handleDeleteVideo = async () => {
+    if (!videoContent?.publicId) return;
+
+    const confirmDelete = confirm("Delete this video?");
+    if (!confirmDelete) return;
+
+    try {
+      await axiosClient.delete("/lectures/delete-video", {
+        data: { publicId: videoContent.publicId },
+      });
+
+      setVideoContent(null);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete video");
     }
   };
 
@@ -288,7 +308,9 @@ export const LectureContentModal = ({
     };
 
     if (lectureType === LectureType.VIDEO) {
-      content.video = videoContent;
+      if (videoContent) {
+        content.video = videoContent;
+      }
     } else if (lectureType === LectureType.QUIZ) {
       content.quiz = quizContent;
     } else if (lectureType === LectureType.CODING) {
@@ -306,7 +328,7 @@ export const LectureContentModal = ({
       {/* Video Upload Area */}
       <div className="space-y-4">
         <Label className="text-base font-semibold">Video</Label>
-        {videoContent.isUploaded ? (
+        {videoContent?.isUploaded ? (
           <div className="border border-border rounded-lg p-4 bg-muted/30">
             <div className="flex items-center gap-4">
               <div className="h-16 w-24 bg-background rounded-lg flex items-center justify-center border border-border">
@@ -336,7 +358,7 @@ export const LectureContentModal = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setVideoContent({})}
+                  onClick={() => handleDeleteVideo()}
                   className="text-muted-foreground hover:text-destructive"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -352,13 +374,13 @@ export const LectureContentModal = ({
               </div>
               <div className="flex-1">
                 <p className="font-medium text-foreground">
-                  {videoContent.fileName}
+                  {videoContent?.fileName}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Uploading... {Math.round(videoContent.uploadProgress || 0)}%
+                  Uploading... {Math.round(videoContent?.uploadProgress || 0)}%
                 </p>
                 <Progress
-                  value={videoContent.uploadProgress}
+                  value={videoContent?.uploadProgress}
                   className="mt-2 h-2"
                 />
               </div>

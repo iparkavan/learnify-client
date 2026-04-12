@@ -49,18 +49,8 @@ import { toast } from "sonner";
 import CourseLandingPageSection from "@/components/instructor/create-course-comp/course-landing-page";
 import CoursePricingSection from "@/components/instructor/create-course-comp/course-pricing";
 import CoursePromotionSection from "@/components/instructor/create-course-comp/course-promotions";
-import {
-  DragEndEvent,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+import { DragEndEvent } from "@dnd-kit/core";
+
 import { arrayMove } from "@dnd-kit/sortable";
 import axiosClient from "@/utils/axios-client";
 import axios from "axios";
@@ -552,7 +542,7 @@ const CreateCourse = () => {
           id: section.id,
           title: section.title,
           objective: section.objective,
-          lectures: section.lectures.map((lecture) => ({
+          lectures: section.lectures.map((lecture, index) => ({
             id: lecture.id,
             title: lecture.title,
             type: lecture.type,
@@ -561,6 +551,8 @@ const CreateCourse = () => {
             has_content: lecture.hasContent ?? false,
             order_index: 0,
             isExpanded: false,
+            order: index,
+            sectionId: section.id,
           })),
         })),
       },
@@ -662,14 +654,14 @@ const CreateCourse = () => {
     <SidebarProvider defaultOpen>
       <div className="min-h-screen flex w-full bg-background">
         {/* Sidebar */}
-        <Sidebar className="border-r border-border">
+        <Sidebar className="border-r border-border pt-20">
           <SidebarHeader className="p-4 border-b border-border">
             <Link
               href="/instructor"
               className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span className="font-medium">Back to courses</span>
+              <span className="font-medium">Back to Dashboard</span>
             </Link>
           </SidebarHeader>
 
