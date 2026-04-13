@@ -1,9 +1,41 @@
+"use client";
+
+import { createCourseMutateFn } from "@/apis/course-api";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { useUserInfoStore } from "@/store/userInfo-store";
+import { useMutation } from "@tanstack/react-query";
+import { Loader, Plus } from "lucide-react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import React from "react";
 
 const InstructorNavbar = () => {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const { mutate: createCourseMutate, isPending: isCreateCoursePending } =
+    useMutation({
+      mutationFn: createCourseMutateFn,
+      mutationKey: ["create-course"],
+    });
+
+  const handleCreateCourse = () => {
+    if (isCreateCoursePending) return;
+
+    createCourseMutate(
+      {
+        title: "Untitled Course",
+      },
+      {
+        onSuccess: (data) => {
+          router.push(`/instructor/create-course/${data.course.id}`);
+        },
+      },
+    );
+  };
+
+  const isInstructorHome = pathname === "/instructor";
+
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="px-4 py-4">
@@ -16,12 +48,25 @@ const InstructorNavbar = () => {
               Welcome back, Instructor!
             </p>
           </div>
-          <Link href="/instructor/create-course">
-            <Button className="bg-gradient-primary hover:opacity-90 transition-opacity">
-              <Plus className="mr-2 h-4 w-4" />
-              Create New Course
+          {isInstructorHome && (
+            <Button
+              className="bg-gradient-primary hover:opacity-90 transition-opacity"
+              onClick={handleCreateCourse}
+              disabled={isCreateCoursePending}
+            >
+              {isCreateCoursePending ? (
+                <>
+                  <Loader />
+                  Loading
+                </>
+              ) : (
+                <>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create New Course
+                </>
+              )}
             </Button>
-          </Link>
+          )}
         </div>
       </div>
     </nav>

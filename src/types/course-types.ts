@@ -112,3 +112,14 @@ export type SaveCoursePayload = {
     }[];
   };
 };
+
+// ---- Step by step approach ---
+
+export interface CreateCoursePayload {
+  title?: string;
+}
+
+export interface CreateCourseResponse {
+  message: string;
+  course: Course;
+}
