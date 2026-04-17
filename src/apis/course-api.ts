@@ -1,3 +1,4 @@
+import { CourseFormData } from "@/schema/course-schema";
 import {
   CreateCoursePayload,
   CreateCourseResponse,
@@ -19,5 +20,16 @@ export const createCourseMutateFn = async (
   payload: CreateCoursePayload,
 ): Promise<CreateCourseResponse> => {
   const res = await axiosClient.post(`/courses/create-course`, payload);
+  return res.data;
+};
+
+export const updateCourseMutateFn = async ({
+  courseId,
+  data,
+}: {
+  courseId: string;
+  data: CourseFormData;
+}) => {
+  const res = await axiosClient.put(`/courses/update-course/${courseId}`, data);
   return res.data;
 };

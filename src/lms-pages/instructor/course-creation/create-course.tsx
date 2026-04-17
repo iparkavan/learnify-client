@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+// import isEqual from "lodash.isequal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -40,6 +41,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -56,6 +58,9 @@ import {
   LectureContent,
   LectureContentModal,
 } from "@/components/instructor/create-course-comp/lecture-content";
+import { useUpdateCourse } from "@/hooks/api-hooks/course-hooks";
+import { useDebounce } from "@/hooks/debounce";
+import { useParams } from "next/navigation";
 
 // ─── Lazy-load heavy section components ──────────────────────────────────────
 const IntendedLeanersSection = lazy(
@@ -262,8 +267,12 @@ const CourseSidebar = memo(
 );
 CourseSidebar.displayName = "CourseSidebar";
 
+interface CreateCourseProps {
+  courseId: string;
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
-const CreateCourse = () => {
+const CreateCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   const [sections, setSections] = useState<Section[]>([]);
   const [activeSection, setActiveSection] =
     useState<ActiveSection>("intended-learners");
@@ -285,6 +294,10 @@ const CreateCourse = () => {
     [],
   );
 
+  const [autoSaveStatus, setAutoSaveStatus] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
+
   const [imageUploading, setImageUploading] = useState(false);
   const [videoUploading, setVideoUploading] = useState(false);
   const [videoUploadProgress, setVideoUploadProgress] = useState(0);
@@ -298,10 +311,16 @@ const CreateCourse = () => {
     size: string;
   } | null>(null);
 
+  const prevRef = useRef<any>(null);
+  const isFirstRender = useRef(true);
+
   const { mutate: saveCourseMutate, isPending: isSavePending } = useMutation({
     mutationFn: saveFullCourseMutateFn,
     mutationKey: ["save-course"],
   });
+
+  const { mutate: updateCourseMutate, isPending: isUpdateCoursePending } =
+    useUpdateCourse();
 
   const form = useForm({
     resolver: zodResolver(courseSchema),
@@ -320,6 +339,55 @@ const CreateCourse = () => {
       congratsMessage: "",
     },
   });
+
+  // _____ COURSE PAYLOAD _______________
+
+  const buildCoursePayload = useCallback(() => {
+    const values = form.getValues();
+
+    return {
+      title: values.title,
+      subtitle: values.subtitle,
+      description: values.description,
+      category: values.category,
+      subcategory: values.subcategory,
+      thumbnail: values.thumbnail,
+      promoVideo: values.promoVideo,
+      level: values.level,
+      language: values.language,
+      price: values.price,
+      welcomeMessage: values.welcomeMessage,
+      congratsMessage: values.congratsMessage,
+    };
+  }, [form]);
+
+  const watchedCourseFields = useWatch({ control: form.control });
+
+  const debounceCourse = useDebounce(watchedCourseFields, 1200);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    const payload = buildCoursePayload();
+
+    // if (isEqual(prevRef.current, payload)) return;
+
+    prevRef.current = payload;
+
+    const save = async () => {
+      try {
+        setAutoSaveStatus("saving");
+        updateCourseMutate({ courseId, data: payload });
+        setAutoSaveStatus("saved");
+      } catch {
+        setAutoSaveStatus("error");
+      }
+    };
+
+    save();
+  }, [debounceCourse]);
 
   // ✅ useWatch instead of form.watch() in render — avoids full re-renders
   const watchedTitle = useWatch({ control: form.control, name: "title" });

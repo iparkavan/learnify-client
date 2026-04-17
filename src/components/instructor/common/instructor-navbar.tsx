@@ -28,7 +28,7 @@ const InstructorNavbar = () => {
       },
       {
         onSuccess: (data) => {
-          router.push(`/instructor/create-course/${data.course.id}`);
+          router.push(`/instructor/courses/${data.course.id}`);
         },
       },
     );
