@@ -27,6 +27,7 @@ import {
 import Link from "next/link";
 import InstructorNavbar from "@/components/instructor/common/instructor-navbar";
 import { Course } from "@/types/course-types";
+import { useRouter } from "next/navigation";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -157,7 +158,8 @@ interface InstructorDashboardProps {
 const InstructorDashboard: React.FC<InstructorDashboardProps> = ({
   courses,
 }) => {
-  console.log("courses ==, ", courses);
+  const router = useRouter();
+
   return (
     <div className="">
       <main className="">
@@ -230,6 +232,9 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
+                      onClick={() =>
+                        router.push(`/instructor/courses/${course.id}`)
+                      }
                       className="group flex gap-4 p-4 rounded-xl border border-border/50 bg-background/50 hover:bg-secondary/50 hover:border-primary/30 transition-all duration-300"
                     >
                       <div className="relative w-32 h-20 rounded-lg overflow-hidden shrink-0">

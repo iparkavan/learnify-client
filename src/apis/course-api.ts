@@ -4,6 +4,7 @@ import {
   CreateCourseResponse,
   SaveCoursePayload,
 } from "@/types/course-types";
+import { GetCourseByIdResponse } from "@/types/instructor-course-types";
 import axiosClient from "@/utils/axios-client";
 
 export const getAllCourses = async (): Promise<{}> => {
@@ -19,7 +20,10 @@ export const saveFullCourseMutateFn = async (payload: SaveCoursePayload) => {
 export const createCourseMutateFn = async (
   payload: CreateCoursePayload,
 ): Promise<CreateCourseResponse> => {
-  const res = await axiosClient.post(`/courses/create-course`, payload);
+  const res = await axiosClient.post(
+    `/instructor/courses/create-course`,
+    payload,
+  );
   return res.data;
 };
 
@@ -30,6 +34,18 @@ export const updateCourseMutateFn = async ({
   courseId: string;
   data: CourseFormData;
 }) => {
-  const res = await axiosClient.put(`/courses/update-course/${courseId}`, data);
+  const res = await axiosClient.put(
+    `/instructor/courses/update-course/${courseId}`,
+    data,
+  );
+  return res.data;
+};
+
+export const getCourseByIdQueryFn = async ({
+  courseId,
+}: {
+  courseId: string;
+}): Promise<GetCourseByIdResponse> => {
+  const res = await axiosClient.get(`/instructor/courses/${courseId}`);
   return res.data;
 };
