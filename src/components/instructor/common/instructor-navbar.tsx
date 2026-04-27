@@ -2,12 +2,9 @@
 
 import { createCourseMutateFn } from "@/apis/course-api";
 import { Button } from "@/components/ui/button";
-import { useUserInfoStore } from "@/store/userInfo-store";
 import { useMutation } from "@tanstack/react-query";
 import { Loader, Plus } from "lucide-react";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import React from "react";
 
 const InstructorNavbar = () => {
   const router = useRouter();

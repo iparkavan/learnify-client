@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-// import isEqual from "lodash.isequal";
+import isEqual from "lodash.isequal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -52,8 +52,11 @@ import { arrayMove } from "@dnd-kit/sortable";
 import axiosClient from "@/utils/axios-client";
 import axios from "axios";
 import { CloudinaryUploadResponse } from "@/types/cloudinary-types";
-import { useMutation } from "@tanstack/react-query";
-import { saveFullCourseMutateFn } from "@/apis/course-api";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  getCourseByIdQueryFn,
+  saveFullCourseMutateFn,
+} from "@/apis/course-api";
 import {
   LectureContent,
   LectureContentModal,
@@ -61,6 +64,7 @@ import {
 import { useUpdateCourse } from "@/hooks/api-hooks/course-hooks";
 import { useDebounce } from "@/hooks/debounce";
 import { useParams } from "next/navigation";
+import { Course } from "@/types/instructor-course-types";
 
 // ─── Lazy-load heavy section components ──────────────────────────────────────
 const IntendedLeanersSection = lazy(
@@ -295,8 +299,8 @@ const CreateCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   );
 
   const [autoSaveStatus, setAutoSaveStatus] = useState<
-    "idle" | "saving" | "saved" | "error"
-  >("idle");
+    "Idle" | "Saving..." | "Saved" | "Error"
+  >("Idle");
 
   const [imageUploading, setImageUploading] = useState(false);
   const [videoUploading, setVideoUploading] = useState(false);
@@ -322,6 +326,14 @@ const CreateCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   const { mutate: updateCourseMutate, isPending: isUpdateCoursePending } =
     useUpdateCourse();
 
+  const { data: courseData, isPending: isCoursePending } = useQuery({
+    queryKey: ["get-coures-by-id", courseId],
+    queryFn: () => getCourseByIdQueryFn({ courseId }),
+    enabled: !!courseId,
+  });
+
+  console.log("courseData king", courseData?.course);
+
   const form = useForm({
     resolver: zodResolver(courseSchema),
     defaultValues: {
@@ -339,6 +351,64 @@ const CreateCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
       congratsMessage: "",
     },
   });
+
+  const mapCourseToForm = (c: Course) => ({
+    title: c.title || "",
+    subtitle: c.subtitle || "",
+    description: c.description || "",
+    category: c.categoryId || "",
+    subcategory: "",
+    level: c.level || "",
+    language: "English",
+    price: c.price?.toString() || "",
+    thumbnail: c.thumbnail || "",
+    promoVideo: c.promoVideo || "",
+    welcomeMessage: "",
+    congratsMessage: "",
+  });
+
+  useEffect(() => {
+    if (courseData?.course) {
+      form.reset(mapCourseToForm(courseData.course));
+    }
+  }, [courseData, form]);
+
+  const mapSectionsToUI = (sections: any[]): Section[] => {
+    return sections.map((section) => ({
+      id: section.id,
+      title: section.title,
+      objective: "", // not in backend
+      lectures: section.lectures.map((lecture: any) => {
+        const video = lecture.video;
+
+        return {
+          id: lecture.id,
+          title: lecture.title,
+          type: lecture.type,
+          duration: video?.duration || 0,
+          isExpanded: false, // UI state default
+          hasContent: !!(lecture.video || lecture.quiz),
+          content: {
+            video: video
+              ? {
+                  url: video.originalUrl,
+                  duration: video.duration,
+                }
+              : undefined,
+            quiz: lecture.quiz || undefined,
+            description: undefined,
+            resources: lecture.resources || [],
+          },
+        };
+      }),
+    }));
+  };
+
+  useEffect(() => {
+    if (courseData?.course?.sections) {
+      setSections(mapSectionsToUI(courseData.course.sections));
+    }
+  }, [courseData]);
 
   // _____ COURSE PAYLOAD _______________
 
@@ -372,17 +442,17 @@ const CreateCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
     }
     const payload = buildCoursePayload();
 
-    // if (isEqual(prevRef.current, payload)) return;
+    if (isEqual(prevRef.current, payload)) return;
 
     prevRef.current = payload;
 
     const save = async () => {
       try {
-        setAutoSaveStatus("saving");
+        setAutoSaveStatus("Saving...");
         updateCourseMutate({ courseId, data: payload });
-        setAutoSaveStatus("saved");
+        setAutoSaveStatus("Saved");
       } catch {
-        setAutoSaveStatus("error");
+        setAutoSaveStatus("Error");
       }
     };
 
