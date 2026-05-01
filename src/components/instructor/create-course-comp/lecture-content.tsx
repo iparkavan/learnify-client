@@ -328,37 +328,69 @@ export const LectureContentModal = ({
       {/* Video Upload Area */}
       <div className="space-y-4">
         <Label className="text-base font-semibold">Video</Label>
-        {videoContent?.isUploaded ? (
+        {videoContent?.url ? (
+          // <div className="border border-border rounded-lg p-4 bg-muted/30">
+          //   <div className="flex items-center gap-4">
+          //     <div className="h-16 w-24 bg-background rounded-lg flex items-center justify-center border border-border">
+          //       <Play className="h-8 w-8 text-primary" />
+          //     </div>
+          //     <div className="flex-1">
+          //       <p className="font-medium text-foreground">
+          //         {videoContent.fileName}
+          //       </p>
+          //       <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+          //         <span>{videoContent.fileSize}</span>
+          //         <span>•</span>
+          //         <span className="flex items-center gap-1">
+          //           <Clock className="h-3 w-3" />
+          //           {videoContent.duration}
+          //         </span>
+          //       </div>
+          //     </div>
+          //     <div className="flex items-center gap-2">
+          //       <Badge
+          //         variant="secondary"
+          //         className="bg-green-500/10 text-green-500"
+          //       >
+          //         <CheckCircle2 className="h-3 w-3 mr-1" />
+          //         Uploaded
+          //       </Badge>
+          //       <Button
+          //         type={"button"}
+          //         variant="ghost"
+          //         size="icon"
+          //         onClick={() => handleDeleteVideo()}
+          //         className="text-muted-foreground hover:text-destructive"
+          //       >
+          //         <Trash2 className="h-4 w-4" />
+          //       </Button>
+          //     </div>
+          //   </div>
+          // </div>
           <div className="border border-border rounded-lg p-4 bg-muted/30">
-            <div className="flex items-center gap-4">
-              <div className="h-16 w-24 bg-background rounded-lg flex items-center justify-center border border-border">
-                <Play className="h-8 w-8 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-foreground">
-                  {videoContent.fileName}
-                </p>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                  <span>{videoContent.fileSize}</span>
-                  <span>•</span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    {videoContent.duration}
-                  </span>
+            <div className="flex flex-col gap-4">
+              {/* 🎥 Actual Video Preview */}
+              <video
+                src={videoContent.url}
+                controls
+                className="w-full rounded-lg max-h-[300px]"
+              />
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-foreground">
+                    {videoContent.fileName || "Uploaded Video"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Duration: {videoContent.duration}
+                  </p>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge
-                  variant="secondary"
-                  className="bg-green-500/10 text-green-500"
-                >
-                  <CheckCircle2 className="h-3 w-3 mr-1" />
-                  Uploaded
-                </Badge>
+
                 <Button
+                  type="button"
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleDeleteVideo()}
+                  onClick={handleDeleteVideo}
                   className="text-muted-foreground hover:text-destructive"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -573,6 +605,7 @@ export const LectureContentModal = ({
                   </div>
                 </div>
                 <Button
+                  type="button"
                   variant="ghost"
                   size="icon"
                   onClick={() => deleteQuizQuestion(question.id)}
@@ -731,6 +764,7 @@ export const LectureContentModal = ({
                     className="flex-1 bg-background border-border font-mono text-sm"
                   />
                   <Button
+                    type="button"
                     variant="ghost"
                     size="icon"
                     onClick={() => {
@@ -826,6 +860,7 @@ export const LectureContentModal = ({
                     <p className="text-xs text-muted-foreground">{file.size}</p>
                   </div>
                   <Button
+                    type={"button"}
                     variant="ghost"
                     size="icon"
                     onClick={() =>
@@ -896,6 +931,7 @@ export const LectureContentModal = ({
                 <p className="text-xs text-muted-foreground">{resource.type}</p>
               </div>
               <Button
+                type="button"
                 variant="ghost"
                 size="icon"
                 onClick={() =>
@@ -1003,10 +1039,12 @@ export const LectureContentModal = ({
 
         {/* FOOTER */}
         <div className="sticky bottom-0 bg-background border-t px-6 py-4 flex justify-end gap-3">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} type="button">
             Cancel
           </Button>
-          <Button onClick={handleSave}>Save Content</Button>
+          <Button onClick={handleSave} type="button">
+            Save Content
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

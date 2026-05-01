@@ -152,6 +152,7 @@ const CurriculumSection: React.FC<CurriculumSectionProps> = ({
 
         {/* Add Section Button */}
         <Button
+          type="button"
           variant="outline"
           onClick={onAddSectionHandler}
           className="w-full border-dashed h-12"

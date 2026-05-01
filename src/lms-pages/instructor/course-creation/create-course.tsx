@@ -244,6 +244,7 @@ const CourseSidebar = memo(
                 {group.items.map((item) => (
                   <SidebarMenuItem key={item.id}>
                     <SidebarMenuButton
+                      type="button"
                       onClick={() => onSectionChange(item.id)}
                       isActive={activeSection === item.id}
                       className="w-full justify-start"
@@ -308,13 +309,14 @@ const CreateCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   const [videoUploading, setVideoUploading] = useState(false);
   const [videoUploadProgress, setVideoUploadProgress] = useState(0);
   const [courseImage, setCourseImage] = useState<{
-    file: File;
+    file?: File;
     preview: string;
   } | null>(null);
   const [promoVideo, setPromoVideo] = useState<{
-    file: File;
-    name: string;
-    size: string;
+    file?: File; // optional
+    name?: string;
+    size?: string;
+    url?: string; // for DB video
   } | null>(null);
 
   const prevRef = useRef<any>(null);
@@ -369,12 +371,6 @@ const CreateCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
     congratsMessage: "",
   });
 
-  useEffect(() => {
-    if (courseData?.course) {
-      form.reset(mapCourseToForm(courseData.course));
-    }
-  }, [courseData, form]);
-
   const mapSectionsToUI = (sections: SectionResponse[]): Section[] => {
     return sections.map((section) => ({
       id: section.id,
@@ -408,13 +404,28 @@ const CreateCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
     }));
   };
 
+  const hydrateCourse = (c: Course) => {
+    form.reset(mapCourseToForm(c));
+
+    const mappedSections = mapSectionsToUI(c.sections);
+    setSections(mappedSections);
+    setOpenAccordionSections(mappedSections.map((s) => s.id));
+
+    setCourseImage(
+      c.thumbnail
+        ? {
+            preview: c.thumbnail,
+            file: undefined,
+          }
+        : null,
+    );
+
+    setPromoVideo(c.promoVideo ? { url: c.promoVideo } : null);
+  };
+
   useEffect(() => {
-    if (courseData?.course?.sections) {
-      const mappedSections = mapSectionsToUI(courseData.course.sections);
-
-      setSections(mappedSections);
-
-      setOpenAccordionSections(mappedSections.map((s) => s.id));
+    if (courseData?.course) {
+      hydrateCourse(courseData.course);
     }
   }, [courseData]);
 
@@ -436,12 +447,23 @@ const CreateCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
       price: values.price,
       welcomeMessage: values.welcomeMessage,
       congratsMessage: values.congratsMessage,
+      learningObjectives: learningObjectives,
+      prerequisites: prerequisites,
+      targetAudience: targetAudience,
     };
-  }, [form]);
+  }, [form, learningObjectives, prerequisites, targetAudience]);
 
   const watchedCourseFields = useWatch({ control: form.control });
 
-  const debounceCourse = useDebounce(watchedCourseFields, 1200);
+  const debounceCourse = useDebounce(
+    {
+      watchedCourseFields,
+      learningObjectives,
+      prerequisites,
+      targetAudience,
+    },
+    1500,
+  );
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -506,7 +528,6 @@ const CreateCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   );
 
   // ─── Handlers (all memoized with useCallback) ─────────────────────────────
-
   const handleCourseImageUpload = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -730,6 +751,18 @@ const CreateCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
     [],
   );
 
+  const currentLecture = useMemo(() => {
+    if (!selectedLecture) return null;
+
+    const section = sections.find((s) => s.id === selectedLecture.sectionId);
+
+    console.log(
+      section?.lectures.find((l) => l.id === selectedLecture.lecture.id),
+    );
+
+    return section?.lectures.find((l) => l.id === selectedLecture.lecture.id);
+  }, [sections, selectedLecture]);
+
   const handleSaveContentHandler = useCallback(
     (content: LectureContent) => {
       if (selectedLecture) {
@@ -802,6 +835,8 @@ const CreateCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   const onSubmit = useCallback(
     (formData: CourseFormData) => {
       if (isSavePending) return;
+
+      console.log("🔥 FULL SAVE TRIGGERED");
 
       const payload = {
         courseData: {
@@ -928,7 +963,10 @@ const CreateCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
               <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
                 <div className="flex items-center justify-between px-6 py-4">
                   <div className="flex items-center gap-4">
-                    <SidebarTrigger className="hover:text-white" />
+                    <SidebarTrigger
+                      type="button"
+                      className="hover:text-white"
+                    />
                     <div>
                       {/* ✅ useWatch value — no form.watch() call in render */}
                       <h1 className="text-lg font-bold text-foreground">
@@ -940,7 +978,11 @@ const CreateCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Button variant="outline" className="border-border">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="border-border"
+                    >
                       <Eye className="mr-2 h-4 w-4" />
                       Preview
                     </Button>
@@ -958,7 +1000,10 @@ const CreateCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
                         </>
                       )}
                     </Button>
-                    <Button className="bg-gradient-primary hover:opacity-90">
+                    <Button
+                      type="button"
+                      className="bg-gradient-primary hover:opacity-90"
+                    >
                       Submit for Review
                     </Button>
                   </div>
@@ -994,7 +1039,8 @@ const CreateCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
           onClose={handleCloseModal}
           lectureType={selectedLecture.lecture.type}
           lectureTitle={selectedLecture.lecture.title}
-          initialContent={selectedLecture.lecture.content}
+          // initialContent={selectedLecture.lecture.content}
+          initialContent={currentLecture?.content}
           onSave={handleSaveContentHandler}
         />
       )}

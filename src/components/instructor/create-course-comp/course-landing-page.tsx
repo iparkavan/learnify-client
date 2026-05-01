@@ -40,16 +40,17 @@ interface CourseLandingPageSectionProps {
   onCourseImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   imageUploading: boolean;
   courseImage: {
-    file: File;
+    file?: File;
     preview: string;
   } | null;
   onRemoveCourseImage: () => void;
   onVideoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   videoUploading: boolean;
   promoVideo: {
-    file: File;
-    name: string;
-    size: string;
+    file?: File; // optional
+    name?: string;
+    size?: string;
+    url?: string; // for DB video
   } | null;
   onRemovePromoVideo: () => void;
   videoUploadProgress: number;
@@ -318,14 +319,18 @@ const CourseLandingPageSection: React.FC<CourseLandingPageSectionProps> = ({
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                  <div className="p-3 border-t border-border">
-                    <p className="text-sm text-foreground font-medium truncate">
-                      {courseImage.file.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {(courseImage.file.size / 1024).toFixed(1)} KB
-                    </p>
-                  </div>
+
+                  {/* ✅ Show file details ONLY if uploaded from local */}
+                  {courseImage.file && (
+                    <div className="p-3 border-t border-border">
+                      <p className="text-sm text-foreground font-medium truncate">
+                        {courseImage.file.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {(courseImage.file.size / 1024).toFixed(1)} KB
+                      </p>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div
@@ -383,14 +388,36 @@ const CourseLandingPageSection: React.FC<CourseLandingPageSectionProps> = ({
                     <div className="h-16 w-16 rounded-lg bg-primary/10 flex items-center justify-center">
                       <Play className="h-8 w-8 text-primary" />
                     </div>
+
                     <div className="flex-1 min-w-0">
-                      <p className="text-foreground font-medium truncate">
-                        {promoVideo.name}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {promoVideo.size}
-                      </p>
+                      {/* ✅ Uploaded file */}
+                      {promoVideo.file ? (
+                        <>
+                          <p className="text-foreground font-medium truncate">
+                            {promoVideo.name}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {promoVideo.size}
+                          </p>
+                        </>
+                      ) : (
+                        /* ✅ DB video */
+                        <>
+                          <p className="text-foreground font-medium">
+                            Promotional Video
+                          </p>
+                          <a
+                            href={promoVideo.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-primary underline"
+                          >
+                            View video
+                          </a>
+                        </>
+                      )}
                     </div>
+
                     <Button
                       variant="destructive"
                       size="icon"

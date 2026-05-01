@@ -77,6 +77,7 @@ const IntendedLeanersSection: React.FC<IntendedLeanersProps> = ({
               />
               {learningObjectives.length > 4 && (
                 <Button
+                  type="button"
                   variant="ghost"
                   size="icon"
                   onClick={() =>
@@ -92,6 +93,7 @@ const IntendedLeanersSection: React.FC<IntendedLeanersProps> = ({
             </div>
           ))}
           <Button
+            type="button"
             variant="outline"
             onClick={() => setLearningObjectives((prev) => [...prev, ""])}
             className="border-dashed"
@@ -128,6 +130,7 @@ const IntendedLeanersSection: React.FC<IntendedLeanersProps> = ({
               />
               {prerequisites.length > 1 && (
                 <Button
+                  type="button"
                   variant="ghost"
                   size="icon"
                   onClick={() =>
@@ -143,6 +146,7 @@ const IntendedLeanersSection: React.FC<IntendedLeanersProps> = ({
             </div>
           ))}
           <Button
+            type="button"
             variant="outline"
             onClick={() => setPrerequisites([...prerequisites, ""])}
             className="border-dashed"
@@ -178,6 +182,7 @@ const IntendedLeanersSection: React.FC<IntendedLeanersProps> = ({
               />
               {targetAudience.length > 1 && (
                 <Button
+                  type="button"
                   variant="ghost"
                   size="icon"
                   onClick={() =>
@@ -193,6 +198,7 @@ const IntendedLeanersSection: React.FC<IntendedLeanersProps> = ({
             </div>
           ))}
           <Button
+            type="button"
             variant="outline"
             onClick={() => setTargetAudience([...targetAudience, ""])}
             className="border-dashed"

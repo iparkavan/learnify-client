@@ -91,6 +91,7 @@ export const SortableLecture = ({
           </Badge>
         ) : null}
         <Button
+          type="button"
           variant="ghost"
           size="sm"
           onClick={() => onOpenContentModal(sectionId, lecture)}
@@ -100,6 +101,7 @@ export const SortableLecture = ({
           {lecture.hasContent ? "Edit" : "Add"} Content
         </Button>
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           onClick={() => onDeleteLecture(sectionId, lecture.id)}

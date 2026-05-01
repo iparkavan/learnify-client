@@ -191,6 +191,7 @@ export const SortableSection = ({
               <div className="flex items-center gap-3 flex-1">
                 {/* Drag Handle */}
                 <button
+                  type="button"
                   {...attributes}
                   {...listeners}
                   className="cursor-grab active:cursor-grabbing touch-none"
@@ -226,6 +227,7 @@ export const SortableSection = ({
 
                 {/* Delete */}
                 <Button
+                  type="button"
                   variant="ghost"
                   size="icon"
                   onClick={() => onDeleteSection(section.id)}
@@ -303,6 +305,7 @@ export const SortableSection = ({
               {/* Add Curriculum Item */}
               <div className="flex items-center gap-2 pt-2 flex-wrap">
                 <Button
+                  type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => onAddLecture(section.id, LectureType.VIDEO)}
@@ -312,6 +315,7 @@ export const SortableSection = ({
                   Lecture
                 </Button>
                 <Button
+                  type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => onAddLecture(section.id, LectureType.QUIZ)}
@@ -321,6 +325,7 @@ export const SortableSection = ({
                   Quiz
                 </Button>
                 <Button
+                  type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => onAddLecture(section.id, LectureType.CODING)}
@@ -330,6 +335,7 @@ export const SortableSection = ({
                   Coding Exercise
                 </Button>
                 <Button
+                  type="button"
                   variant="outline"
                   size="sm"
                   onClick={() =>
