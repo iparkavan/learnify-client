@@ -6,7 +6,7 @@ import {
   ACTIVE_SECTIONS,
   containerVariants,
   itemVariants,
-} from "../../../lms-pages/instructor/course-creation/create-course";
+} from "../../../lms-pages/instructor/course-creation/edit-course";
 import { ChangeEvent, Dispatch, SetStateAction } from "react";
 
 interface IntendedLeanersProps {

@@ -5,7 +5,7 @@ import {
   Lecture,
   LectureType,
   Section,
-} from "../../../lms-pages/instructor/course-creation/create-course";
+} from "../../../lms-pages/instructor/course-creation/edit-course";
 import React, { Dispatch, SetStateAction } from "react";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Code, FileText, HelpCircle, Play, Plus } from "lucide-react";

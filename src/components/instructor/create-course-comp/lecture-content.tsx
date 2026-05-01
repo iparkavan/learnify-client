@@ -36,7 +36,7 @@ import {
 import axios, { AxiosProgressEvent } from "axios";
 import { CloudinaryUploadResponse } from "@/types/cloudinary-types";
 import axiosClient from "@/utils/axios-client";
-import { LectureType } from "@/lms-pages/instructor/course-creation/create-course";
+import { LectureType } from "@/lms-pages/instructor/course-creation/edit-course";
 import { minutesToSeconds } from "@/utils/contants";
 
 // Types

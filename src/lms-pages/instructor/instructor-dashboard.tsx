@@ -81,52 +81,52 @@ const stats = [
   },
 ];
 
-// const courses = [
-//   {
-//     id: 1,
-//     title: "Complete Web Development Bootcamp",
-//     students: 847,
-//     revenue: "$8,470",
-//     rating: 4.9,
-//     status: "published",
-//     progress: 100,
-//     thumbnail:
-//       "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=225&fit=crop",
-//   },
-//   {
-//     id: 2,
-//     title: "Advanced React & TypeScript",
-//     students: 534,
-//     revenue: "$5,340",
-//     rating: 4.8,
-//     status: "published",
-//     progress: 100,
-//     thumbnail:
-//       "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=225&fit=crop",
-//   },
-//   {
-//     id: 3,
-//     title: "Python for Data Science",
-//     students: 421,
-//     revenue: "$4,210",
-//     rating: 4.7,
-//     status: "published",
-//     progress: 100,
-//     thumbnail:
-//       "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=400&h=225&fit=crop",
-//   },
-//   {
-//     id: 4,
-//     title: "Mobile App Development with Flutter",
-//     students: 0,
-//     revenue: "$0",
-//     rating: 0,
-//     status: "draft",
-//     progress: 65,
-//     thumbnail:
-//       "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=225&fit=crop",
-//   },
-// ];
+const courses = [
+  {
+    id: 1,
+    title: "Complete Web Development Bootcamp",
+    students: 847,
+    revenue: "$8,470",
+    rating: 4.9,
+    status: "published",
+    progress: 100,
+    thumbnail:
+      "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=225&fit=crop",
+  },
+  {
+    id: 2,
+    title: "Advanced React & TypeScript",
+    students: 534,
+    revenue: "$5,340",
+    rating: 4.8,
+    status: "published",
+    progress: 100,
+    thumbnail:
+      "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=225&fit=crop",
+  },
+  {
+    id: 3,
+    title: "Python for Data Science",
+    students: 421,
+    revenue: "$4,210",
+    rating: 4.7,
+    status: "published",
+    progress: 100,
+    thumbnail:
+      "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=400&h=225&fit=crop",
+  },
+  {
+    id: 4,
+    title: "Mobile App Development with Flutter",
+    students: 0,
+    revenue: "$0",
+    rating: 0,
+    status: "draft",
+    progress: 65,
+    thumbnail:
+      "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=225&fit=crop",
+  },
+];
 
 const recentActivity = [
   {

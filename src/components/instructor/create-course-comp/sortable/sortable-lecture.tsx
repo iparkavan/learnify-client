@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ReactNode } from "react";
-import { LectureType } from "@/lms-pages/instructor/course-creation/create-course";
+import { LectureType } from "@/lms-pages/instructor/course-creation/edit-course";
 
 interface Lecture {
   id: string;

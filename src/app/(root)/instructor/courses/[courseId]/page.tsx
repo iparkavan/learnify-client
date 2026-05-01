@@ -1,6 +1,6 @@
 "use client";
 
-import CreateCourse from "@/lms-pages/instructor/course-creation/create-course";
+import EditCourse from "@/lms-pages/instructor/course-creation/edit-course";
 import { useParams } from "next/navigation";
 
 const page = () => {
@@ -10,7 +10,7 @@ const page = () => {
 
   return (
     <div className="">
-      <CreateCourse courseId={courseId} />
+      <EditCourse courseId={courseId} />
     </div>
   );
 };

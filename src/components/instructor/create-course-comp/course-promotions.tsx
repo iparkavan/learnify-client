@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   containerVariants,
   itemVariants,
-} from "@/lms-pages/instructor/course-creation/create-course";
+} from "@/lms-pages/instructor/course-creation/edit-course";
 import { Megaphone, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 

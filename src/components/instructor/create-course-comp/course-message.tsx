@@ -16,7 +16,7 @@ import IntendedLeaners from "./intended-learners";
 import {
   containerVariants,
   itemVariants,
-} from "../../../lms-pages/instructor/course-creation/create-course";
+} from "../../../lms-pages/instructor/course-creation/edit-course";
 import { CourseFormData } from "@/schema/course-schema";
 import { UseFormReturn } from "react-hook-form";
 

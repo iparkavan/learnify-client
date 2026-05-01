@@ -279,7 +279,7 @@ interface CreateCourseProps {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-const CreateCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
+const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   const [sections, setSections] = useState<Section[]>([]);
   const [activeSection, setActiveSection] =
     useState<ActiveSection>("intended-learners");
@@ -790,7 +790,9 @@ const CreateCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
       if (over && active.id !== over.id) {
         const oldIndex = sections.findIndex((s) => s.id === active.id);
         const newIndex = sections.findIndex((s) => s.id === over.id);
+
         setSections(arrayMove(sections, oldIndex, newIndex));
+
         toast("Section reordered", {
           description: "Your curriculum has been updated.",
         });
@@ -1048,4 +1050,4 @@ const CreateCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   );
 };
 
-export default CreateCourse;
+export default EditCourse;

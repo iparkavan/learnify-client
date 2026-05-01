@@ -25,7 +25,7 @@ import { Image, Play, Trash2, Video } from "lucide-react";
 import {
   containerVariants,
   itemVariants,
-} from "@/lms-pages/instructor/course-creation/create-course";
+} from "@/lms-pages/instructor/course-creation/edit-course";
 import { UseFormReturn } from "react-hook-form";
 import { CourseFormData } from "@/schema/course-schema";
 import { Button } from "@/components/ui/button";

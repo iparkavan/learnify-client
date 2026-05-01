@@ -38,7 +38,7 @@ import {
   Lecture,
   LectureType,
   Section,
-} from "@/lms-pages/instructor/course-creation/create-course";
+} from "@/lms-pages/instructor/course-creation/edit-course";
 import { SortableLecture } from "./sortable-lecture";
 import {
   Accordion,
