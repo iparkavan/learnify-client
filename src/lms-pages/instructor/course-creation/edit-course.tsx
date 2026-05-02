@@ -65,6 +65,7 @@ import { useUpdateCourse } from "@/hooks/api-hooks/course-hooks";
 import { useDebounce } from "@/hooks/debounce";
 import { useParams } from "next/navigation";
 import { Course, SectionResponse } from "@/types/instructor-course-types";
+import { createSectionMutateFn } from "@/apis/section-api";
 
 // ─── Lazy-load heavy section components ──────────────────────────────────────
 const IntendedLeanersSection = lazy(
@@ -336,6 +337,21 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
     queryKey: ["get-coures-by-id", courseId],
     queryFn: () => getCourseByIdQueryFn({ courseId }),
     enabled: !!courseId,
+  });
+
+  const { mutate: createSectionMutate } = useMutation({
+    mutationFn: async ({ tempId }: { tempId: string }) => {
+      const data = await createSectionMutateFn({
+        courseId,
+        payload: { title: "New Section" },
+      });
+
+      return {
+        sections: data.section,
+        tempId,
+      };
+    },
+    onSuccess: () => {},
   });
 
   const form = useForm({
@@ -660,7 +676,7 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   const onAddSectionHandler = useCallback(() => {
     const newSection: Section = {
       id: generateId(),
-      title: "",
+      title: "Untitled Section",
       objective: "",
       lectures: [],
     };

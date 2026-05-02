@@ -34,5 +34,89 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
 # lms-frontend
+
 # learnify-cli
+
+<!-- Start work on the line number 342 in the edit-course.tsx file. Attach the reference code below -->
+
+<!-- const { mutate: createSectionMutate } = useMutation({
+  mutationFn: async ({
+    tempId,
+  }: {
+    tempId: string;
+  }) => {
+    const data = await createSectionMutateFn({
+      courseId,
+      payload: {
+        title: "Untitled Section",
+      },
+    });
+
+    return {
+      section: data.section, // real DB section from backend
+      tempId, // frontend-only temp id
+    };
+  },
+
+  onSuccess: ({ section, tempId }) => {
+    // replace temp section with real DB section
+    setSections((prev) =>
+      prev.map((item) =>
+        item.id === tempId
+          ? {
+              ...item,
+              id: section.id,
+              title: section.title,
+              courseId: section.courseId,
+              order: section.order,
+            }
+          : item
+      )
+    );
+
+    // replace temp accordion id with real DB id
+    setOpenAccordionSections((prev) =>
+      prev.map((id) =>
+        id === tempId ? section.id : id
+      )
+    );
+  },
+
+  onError: (_, variables) => {
+    // rollback if API fails
+    setSections((prev) =>
+      prev.filter((item) => item.id !== variables.tempId)
+    );
+
+    setOpenAccordionSections((prev) =>
+      prev.filter((id) => id !== variables.tempId)
+    );
+  },
+});
+
+const onAddSectionHandler = useCallback(() => {
+  const tempId = generateId();
+
+  const newSection: Section = {
+    id: tempId,
+    title: "Untitled Section",
+    objective: "",
+    lectures: [],
+  };
+
+  // instant UI update
+  setSections((prev) => [...prev, newSection]);
+
+  // open accordion immediately
+  setOpenAccordionSections((prev) => [
+    ...prev,
+    tempId,
+  ]);
+
+  // backend API call
+  createSectionMutate({
+    tempId,
+  });
+}, [createSectionMutate]); -->
