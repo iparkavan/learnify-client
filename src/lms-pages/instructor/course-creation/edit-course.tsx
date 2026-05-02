@@ -52,7 +52,7 @@ import { arrayMove } from "@dnd-kit/sortable";
 import axiosClient from "@/utils/axios-client";
 import axios from "axios";
 import { CloudinaryUploadResponse } from "@/types/cloudinary-types";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getCourseByIdQueryFn,
   saveFullCourseMutateFn,
@@ -282,6 +282,7 @@ interface CreateCourseProps {
 // ─── Main Component ───────────────────────────────────────────────────────────
 const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   const [sections, setSections] = useState<Section[]>([]);
+  console.log("SECTIONS", sections);
   const [activeSection, setActiveSection] =
     useState<ActiveSection>("intended-learners");
   const [learningObjectives, setLearningObjectives] = useState<string[]>([
@@ -323,6 +324,8 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   const prevRef = useRef<any>(null);
   const isFirstRender = useRef(true);
 
+  const queryClient = useQueryClient();
+
   const { mutate: saveCourseMutate, isPending: isSavePending } = useMutation({
     mutationFn: saveFullCourseMutateFn,
     mutationKey: ["save-course"],
@@ -334,24 +337,71 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   } = useUpdateCourse();
 
   const { data: courseData, isPending: isCoursePending } = useQuery({
-    queryKey: ["get-coures-by-id", courseId],
+    queryKey: ["get-course-by-id", courseId],
     queryFn: () => getCourseByIdQueryFn({ courseId }),
     enabled: !!courseId,
   });
 
   const { mutate: createSectionMutate } = useMutation({
-    mutationFn: async ({ tempId }: { tempId: string }) => {
-      const data = await createSectionMutateFn({
+    mutationFn: () =>
+      createSectionMutateFn({
         courseId,
-        payload: { title: "New Section" },
-      });
+      }),
 
-      return {
-        sections: data.section,
-        tempId,
-      };
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["get-course-by-id", courseId],
+      });
     },
-    onSuccess: () => {},
+
+    // onMutate: async () => {
+    //   await queryClient.cancelQueries({
+    //     queryKey: ["get-course-by-id", courseId],
+    //   });
+
+    //   const previousCourseData = queryClient.getQueryData([
+    //     "get-course-by-id",
+    //     courseId,
+    //   ]);
+
+    //   queryClient.setQueryData(["get-course-by-id", courseId], (old: any) => {
+    //     if (!old?.course) return old;
+
+    //     return {
+    //       ...old,
+    //       course: {
+    //         ...old.course,
+    //         sections: [
+    //           ...old.course.sections,
+    //           {
+    //             id: `temp-${Date.now()}`,
+    //             title: `Untitled Section ${old.course.sections.length + 1}`,
+    //             objective: "",
+    //             order: old.course.sections.length + 1,
+    //             lectures: [],
+    //           },
+    //         ],
+    //       },
+    //     };
+    //   });
+
+    //   return { previousCourseData };
+    // },
+    // onError: (_error, _variables, context) => {
+    //   if (context?.previousCourseData) {
+    //     queryClient.setQueryData(
+    //       ["get-course-by-id", courseId],
+    //       context.previousCourseData,
+    //     );
+    //   }
+    // },
+
+    // // 6. fetch real backend truth
+    // onSettled: () => {
+    //   queryClient.invalidateQueries({
+    //     queryKey: ["get-course-by-id", courseId],
+    //   });
+    // },
   });
 
   const form = useForm({
@@ -674,15 +724,19 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
 
   // ✅ Replaced useEffect sync with direct state update on add
   const onAddSectionHandler = useCallback(() => {
-    const newSection: Section = {
-      id: generateId(),
-      title: "Untitled Section",
-      objective: "",
-      lectures: [],
-    };
-    setSections((prev) => [...prev, newSection]);
-    // Directly open the new section instead of syncing via useEffect
-    setOpenAccordionSections((prev) => [...prev, newSection.id]);
+    // let tempId = generateId();
+    // let count;
+    // const newSection: Section = {
+    //   id: tempId,
+    //   title: "Untitled Section",
+    //   objective: "",
+    //   lectures: [],
+    // };
+    // setSections((prev) => [...prev, newSection]);
+    // // Directly open the new section instead of syncing via useEffect
+    // setOpenAccordionSections((prev) => [...prev, newSection.id]);
+
+    createSectionMutate();
   }, []);
 
   const updateSectionHandler = useCallback(
