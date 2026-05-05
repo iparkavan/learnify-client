@@ -65,7 +65,10 @@ import { useUpdateCourse } from "@/hooks/api-hooks/course-hooks";
 import { useDebounce } from "@/hooks/debounce";
 import { useParams } from "next/navigation";
 import { Course, SectionResponse } from "@/types/instructor-course-types";
-import { createSectionMutateFn } from "@/apis/section-api";
+import {
+  createSectionMutateFn,
+  deleteSectionMutateFn,
+} from "@/apis/section-api";
 
 // ─── Lazy-load heavy section components ──────────────────────────────────────
 const IntendedLeanersSection = lazy(
@@ -342,67 +345,27 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
     enabled: !!courseId,
   });
 
-  const { mutate: createSectionMutate } = useMutation({
-    mutationFn: () =>
-      createSectionMutateFn({
-        courseId,
-      }),
+  const { mutate: deleteSectionMutate, isPending: isDeleteSectionPending } =
+    useMutation({
+      mutationFn: (sectionId: string) => deleteSectionMutateFn(sectionId),
+    });
 
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["get-course-by-id", courseId],
-      });
-    },
+  const { mutate: createSectionMutate, isPending: isCreateSectionPending } =
+    useMutation({
+      mutationFn: () =>
+        createSectionMutateFn({
+          courseId,
+        }),
 
-    // onMutate: async () => {
-    //   await queryClient.cancelQueries({
-    //     queryKey: ["get-course-by-id", courseId],
-    //   });
-
-    //   const previousCourseData = queryClient.getQueryData([
-    //     "get-course-by-id",
-    //     courseId,
-    //   ]);
-
-    //   queryClient.setQueryData(["get-course-by-id", courseId], (old: any) => {
-    //     if (!old?.course) return old;
-
-    //     return {
-    //       ...old,
-    //       course: {
-    //         ...old.course,
-    //         sections: [
-    //           ...old.course.sections,
-    //           {
-    //             id: `temp-${Date.now()}`,
-    //             title: `Untitled Section ${old.course.sections.length + 1}`,
-    //             objective: "",
-    //             order: old.course.sections.length + 1,
-    //             lectures: [],
-    //           },
-    //         ],
-    //       },
-    //     };
-    //   });
-
-    //   return { previousCourseData };
-    // },
-    // onError: (_error, _variables, context) => {
-    //   if (context?.previousCourseData) {
-    //     queryClient.setQueryData(
-    //       ["get-course-by-id", courseId],
-    //       context.previousCourseData,
-    //     );
-    //   }
-    // },
-
-    // // 6. fetch real backend truth
-    // onSettled: () => {
-    //   queryClient.invalidateQueries({
-    //     queryKey: ["get-course-by-id", courseId],
-    //   });
-    // },
-  });
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ["get-course-by-id", courseId],
+        });
+        toast("Section created", {
+          description: "The section has been created successfully.",
+        });
+      },
+    });
 
   const form = useForm({
     resolver: zodResolver(courseSchema),
@@ -496,7 +459,6 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   }, [courseData]);
 
   // _____ COURSE PAYLOAD _______________
-
   const buildCoursePayload = useCallback(() => {
     const values = form.getValues();
 
@@ -557,14 +519,17 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
 
   // ✅ useWatch instead of form.watch() in render — avoids full re-renders
   const watchedTitle = useWatch({ control: form.control, name: "title" });
+
   const watchedDescription = useWatch({
     control: form.control,
     name: "description",
   });
+
   const watchedCategory = useWatch({
     control: form.control,
     name: "category",
   });
+
   const watchedPrice = useWatch({ control: form.control, name: "price" });
 
   // ✅ useMemo for progress — only recomputes when deps change
@@ -749,7 +714,18 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   );
 
   const onDeleteSectionHandler = useCallback((sectionId: string) => {
-    setSections((prev) => prev.filter((sec) => sec.id !== sectionId));
+    // nedd
+    deleteSectionMutate(sectionId, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ["get-course-by-id", courseId],
+        });
+        toast("Section deleted", {
+          description: "The section has been deleted successfully.",
+        });
+      },
+    });
+    // setSections((prev) => prev.filter((sec) => sec.id !== sectionId));
   }, []);
 
   // ─── Lecture Handlers ─────────────────────────────────────────────────────
@@ -989,6 +965,8 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
             openAccordionSections={openAccordionSections}
             setOpenAccordionSections={setOpenAccordionSections}
             onReorderLectures={handleReorderLectures}
+            isCreateSectionPending={isCreateSectionPending}
+            isDeleteSectionPending={isDeleteSectionPending}
           />
         );
       case ACTIVE_SECTIONS.LANDING_PAGE:

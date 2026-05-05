@@ -8,7 +8,15 @@ import {
 } from "../../../lms-pages/instructor/course-creation/edit-course";
 import React, { Dispatch, SetStateAction } from "react";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Code, FileText, HelpCircle, Play, Plus } from "lucide-react";
+import {
+  BookOpen,
+  Code,
+  FileText,
+  HelpCircle,
+  Loader,
+  Play,
+  Plus,
+} from "lucide-react";
 import {
   closestCenter,
   DndContext,
@@ -58,6 +66,8 @@ interface CurriculumSectionProps {
   setOpenAccordionSections: Dispatch<SetStateAction<string[]>>;
   handleSectionDragEnd: (event: DragEndEvent) => void;
   onReorderLectures: (sectionId: string, newLectureOrder: string[]) => void;
+  isCreateSectionPending: boolean;
+  isDeleteSectionPending: boolean;
 }
 
 const CurriculumSection: React.FC<CurriculumSectionProps> = ({
@@ -75,6 +85,8 @@ const CurriculumSection: React.FC<CurriculumSectionProps> = ({
   // sensors,
   handleSectionDragEnd,
   onReorderLectures,
+  isCreateSectionPending,
+  isDeleteSectionPending,
 }) => {
   // Drag and drop handlers
   const sensors = useSensors(
@@ -144,6 +156,7 @@ const CurriculumSection: React.FC<CurriculumSectionProps> = ({
                   onReorderlectures={onReorderLectures}
                   openAccordionSections={openAccordionSections}
                   setOpenAccordionSections={setOpenAccordionSections}
+                  isDeleteSectionPending={isDeleteSectionPending}
                 />
               ))}
             </AnimatePresence>
@@ -156,9 +169,18 @@ const CurriculumSection: React.FC<CurriculumSectionProps> = ({
           variant="outline"
           onClick={onAddSectionHandler}
           className="w-full border-dashed h-12"
+          disabled={isCreateSectionPending}
         >
-          <Plus className="h-5 w-5 mr-2" />
-          Add Section
+          {isCreateSectionPending ? (
+            <>
+              <Loader className="animate-spin mr-2" /> Loading...
+            </>
+          ) : (
+            <>
+              <Plus className="h-5 w-5 mr-2" />
+              Add Section
+            </>
+          )}
         </Button>
       </motion.div>
     </motion.div>

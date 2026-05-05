@@ -12,6 +12,7 @@ import {
   Code,
   BookOpen,
   ChevronDown,
+  Loader,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -79,6 +80,7 @@ interface SortableSectionProps {
   onDeleteLecture: (sectionId: string, lectureId: string) => void;
   onOpenContentModal: (sectionId: string, lecture: Lecture) => void;
   onReorderlectures: (sectionId: string, newLectureOrder: string[]) => void;
+  isDeleteSectionPending: boolean;
 }
 
 export const SortableSection = ({
@@ -93,6 +95,7 @@ export const SortableSection = ({
   onReorderlectures,
   openAccordionSections,
   setOpenAccordionSections,
+  isDeleteSectionPending,
 }: SortableSectionProps) => {
   const [isOpen, setIsOpen] = useState(true);
 
@@ -231,9 +234,14 @@ export const SortableSection = ({
                   variant="ghost"
                   size="icon"
                   onClick={() => onDeleteSection(section.id)}
+                  disabled={isDeleteSectionPending}
                   className="text-muted-foreground hover:text-destructive"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  {isDeleteSectionPending ? (
+                    <Loader className="animate-spin h-4 w-4" />
+                  ) : (
+                    <Trash2 className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
 

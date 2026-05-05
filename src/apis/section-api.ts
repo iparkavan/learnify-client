@@ -6,8 +6,13 @@ export const createSectionMutateFn = async ({
   courseId: string;
 }) => {
   const res = await axiosClient.post(
-    `/instructor/courses/${courseId}/create-section`,
+    `/instructor/sections/${courseId}/create-section`,
   );
 
+  return res.data;
+};
+
+export const deleteSectionMutateFn = async (sectionId: string) => {
+  const res = await axiosClient.delete(`/instructor/sections/${sectionId}`);
   return res.data;
 };
