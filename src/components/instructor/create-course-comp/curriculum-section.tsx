@@ -32,6 +32,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { SortableSection } from "./sortable/sortable-section";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const getLectureIcon = (type: Lecture["type"]) => {
   switch (type) {

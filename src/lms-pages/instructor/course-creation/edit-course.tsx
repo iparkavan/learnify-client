@@ -348,6 +348,64 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   const { mutate: deleteSectionMutate, isPending: isDeleteSectionPending } =
     useMutation({
       mutationFn: (sectionId: string) => deleteSectionMutateFn(sectionId),
+
+      onMutate: async (sectionId: string) => {
+        await queryClient.cancelQueries({
+          queryKey: ["get-course-by-id", courseId],
+        });
+
+        // 1. Snapshot previous value
+        // Note: Your useQuery returns { course: Course } based on your useEffect
+        const previousData = queryClient.getQueryData<{ course: Course }>([
+          "get-course-by-id",
+          courseId,
+        ]);
+
+        if (previousData?.course?.sections) {
+          // 2. Optimistically update the CACHE
+          queryClient.setQueryData<{ course: Course }>(
+            ["get-course-by-id", courseId],
+            {
+              ...previousData,
+              course: {
+                ...previousData.course,
+                sections: previousData.course.sections.filter(
+                  (s) => s.id !== sectionId,
+                ),
+              },
+            },
+          );
+
+          // 3. Optimistically update your UI STATE (the 'sections' state)
+          // We filter 'sections' which is already the mapped UI type
+          setSections((prev) => prev.filter((s) => s.id !== sectionId));
+        }
+
+        return { previousData };
+      },
+
+      onError: (err, sectionId, context) => {
+        // 4. Rollback
+        if (context?.previousData) {
+          queryClient.setQueryData(
+            ["get-course-by-id", courseId],
+            context.previousData,
+          );
+
+          // Re-map the sections to UI format to restore local state
+          const rolledBackSections = mapSectionsToUI(
+            context.previousData.course.sections,
+          );
+          setSections(rolledBackSections);
+        }
+        toast.error("Delete failed. UI restored.");
+      },
+
+      onSettled: () => {
+        queryClient.invalidateQueries({
+          queryKey: ["get-course-by-id", courseId],
+        });
+      },
     });
 
   const { mutate: createSectionMutate, isPending: isCreateSectionPending } =
@@ -401,6 +459,7 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   });
 
   const mapSectionsToUI = (sections: SectionResponse[]): Section[] => {
+    console.log("Mapping sections:", sections);
     return sections.map((section) => ({
       id: section.id,
       title: section.title,
@@ -716,14 +775,14 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   const onDeleteSectionHandler = useCallback((sectionId: string) => {
     // nedd
     deleteSectionMutate(sectionId, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: ["get-course-by-id", courseId],
-        });
-        toast("Section deleted", {
-          description: "The section has been deleted successfully.",
-        });
-      },
+      // onSuccess: () => {
+      //   queryClient.invalidateQueries({
+      //     queryKey: ["get-course-by-id", courseId],
+      //   });
+      //   toast("Section deleted", {
+      //     description: "The section has been deleted successfully.",
+      //   });
+      // },
     });
     // setSections((prev) => prev.filter((sec) => sec.id !== sectionId));
   }, []);
