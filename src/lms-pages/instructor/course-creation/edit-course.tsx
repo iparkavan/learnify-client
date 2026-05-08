@@ -68,6 +68,7 @@ import { Course, SectionResponse } from "@/types/instructor-course-types";
 import {
   createSectionMutateFn,
   deleteSectionMutateFn,
+  updateSectionMutateFn,
 } from "@/apis/section-api";
 
 // ─── Lazy-load heavy section components ──────────────────────────────────────
@@ -326,6 +327,8 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
 
   const prevRef = useRef<any>(null);
   const isFirstRender = useRef(true);
+  const latestSaveRef = useRef(0);
+  const prevSectionsRef = useRef<Section[]>([]);
 
   const queryClient = useQueryClient();
 
@@ -335,7 +338,7 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   });
 
   const {
-    mutate: autoSaveUpdateCourseMutate,
+    mutateAsync: autoSaveUpdateCourseMutate,
     isPending: isAutoSaveUpdateCoursePending,
   } = useUpdateCourse();
 
@@ -424,6 +427,30 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
         });
       },
     });
+
+  const { mutateAsync: updateSectionMutation } = useMutation({
+    mutationFn: async ({
+      sectionId,
+      data,
+    }: {
+      sectionId: string;
+      data: Partial<Section>;
+    }) => updateSectionMutateFn(sectionId, data),
+  });
+
+  const debouncedSections = useDebounce(sections, 1500);
+
+  console.log("debouncedSections", debouncedSections);
+
+  useEffect(() => {
+    if (isEqual(prevSectionsRef.current, debouncedSections)) {
+      return;
+    }
+
+    prevSectionsRef.current = debouncedSections;
+
+    const saveSection = async () => {};
+  }, [debouncedSections]);
 
   const form = useForm({
     resolver: zodResolver(courseSchema),
@@ -564,12 +591,24 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
     prevRef.current = payload;
 
     const save = async () => {
+      const saveId = Date.now();
+      latestSaveRef.current = saveId;
+
       try {
         setAutoSaveStatus("Saving...");
-        autoSaveUpdateCourseMutate({ courseId, data: payload });
-        setAutoSaveStatus("Saved");
+
+        await autoSaveUpdateCourseMutate({
+          courseId,
+          data: payload,
+        });
+
+        if (latestSaveRef.current === saveId) {
+          setAutoSaveStatus("Saved");
+        }
       } catch {
-        setAutoSaveStatus("Error");
+        if (latestSaveRef.current === saveId) {
+          setAutoSaveStatus("Error");
+        }
       }
     };
 

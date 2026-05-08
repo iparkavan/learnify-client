@@ -1,4 +1,4 @@
-import { Section } from "@/types/course-types";
+import { Section } from "@/lms-pages/instructor/course-creation/edit-course";
 import axiosClient from "@/utils/axios-client";
 
 export const createSectionMutateFn = async ({
