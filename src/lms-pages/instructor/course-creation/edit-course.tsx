@@ -440,8 +440,6 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
 
   const debouncedSections = useDebounce(sections, 1500);
 
-  console.log("debouncedSections", debouncedSections);
-
   useEffect(() => {
     if (isFirstRender.current) return;
 
@@ -1004,7 +1002,14 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
         const oldIndex = sections.findIndex((s) => s.id === active.id);
         const newIndex = sections.findIndex((s) => s.id === over.id);
 
-        setSections(arrayMove(sections, oldIndex, newIndex));
+        const reOrdered = arrayMove(sections, oldIndex, newIndex).map(
+          (section, index) => ({
+            ...section,
+            order: index,
+          }),
+        );
+
+        setSections(reOrdered);
 
         toast("Section reordered", {
           description: "Your curriculum has been updated.",
