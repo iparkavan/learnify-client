@@ -69,6 +69,7 @@ interface CurriculumSectionProps {
   onReorderLectures: (sectionId: string, newLectureOrder: string[]) => void;
   isCreateSectionPending: boolean;
   isDeleteSectionPending: boolean;
+  isDeleteSectionVariables: string | undefined;
 }
 
 const CurriculumSection: React.FC<CurriculumSectionProps> = ({
@@ -88,6 +89,7 @@ const CurriculumSection: React.FC<CurriculumSectionProps> = ({
   onReorderLectures,
   isCreateSectionPending,
   isDeleteSectionPending,
+  isDeleteSectionVariables,
 }) => {
   // Drag and drop handlers
   const sensors = useSensors(
@@ -158,6 +160,7 @@ const CurriculumSection: React.FC<CurriculumSectionProps> = ({
                   openAccordionSections={openAccordionSections}
                   setOpenAccordionSections={setOpenAccordionSections}
                   isDeleteSectionPending={isDeleteSectionPending}
+                  isDeleteSectionVariables={isDeleteSectionVariables}
                 />
               ))}
             </AnimatePresence>

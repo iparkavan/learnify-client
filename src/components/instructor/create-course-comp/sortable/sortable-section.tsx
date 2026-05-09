@@ -81,6 +81,7 @@ interface SortableSectionProps {
   onOpenContentModal: (sectionId: string, lecture: Lecture) => void;
   onReorderlectures: (sectionId: string, newLectureOrder: string[]) => void;
   isDeleteSectionPending: boolean;
+  isDeleteSectionVariables: string | undefined;
 }
 
 export const SortableSection = ({
@@ -96,8 +97,12 @@ export const SortableSection = ({
   openAccordionSections,
   setOpenAccordionSections,
   isDeleteSectionPending,
+  isDeleteSectionVariables,
 }: SortableSectionProps) => {
   const [isOpen, setIsOpen] = useState(true);
+
+  const isDeletingSection =
+    isDeleteSectionPending && isDeleteSectionVariables === section.id;
 
   const {
     attributes,
@@ -234,10 +239,10 @@ export const SortableSection = ({
                   variant="ghost"
                   size="icon"
                   onClick={() => onDeleteSection(section.id)}
-                  disabled={isDeleteSectionPending}
+                  disabled={isDeletingSection}
                   className="text-muted-foreground hover:text-destructive"
                 >
-                  {isDeleteSectionPending ? (
+                  {isDeletingSection ? (
                     <Loader className="animate-spin h-4 w-4" />
                   ) : (
                     <Trash2 className="h-4 w-4" />
