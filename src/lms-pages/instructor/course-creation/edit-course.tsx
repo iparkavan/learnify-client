@@ -443,13 +443,82 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   console.log("debouncedSections", debouncedSections);
 
   useEffect(() => {
-    if (isEqual(prevSectionsRef.current, debouncedSections)) {
+    if (isFirstRender.current) return;
+
+    const previous = prevSectionsRef.current;
+    const current = debouncedSections;
+
+    // first hydrate
+    if (!previous.length) {
+      prevSectionsRef.current = current;
       return;
     }
 
-    prevSectionsRef.current = debouncedSections;
+    const saveChanges = async () => {
+      try {
+        setAutoSaveStatus("Saving...");
 
-    const saveSection = async () => {};
+        for (const currentSection of current) {
+          const prevSection = previous.find((s) => s.id === currentSection.id);
+
+          // NEW SECTION
+          if (!prevSection) continue;
+
+          // SECTION CHANGED
+          const sectionChanged =
+            prevSection.title !== currentSection.title ||
+            prevSection.objective !== currentSection.objective ||
+            prevSection.order !== currentSection.order;
+
+          if (sectionChanged) {
+            await updateSectionMutation({
+              sectionId: currentSection.id,
+              data: {
+                title: currentSection.title,
+                objective: currentSection.objective,
+                order: currentSection.order,
+              },
+            });
+          }
+
+          // LECTURES
+          for (const currentLecture of currentSection.lectures) {
+            const prevLecture = prevSection.lectures.find(
+              (l) => l.id === currentLecture.id,
+            );
+
+            if (!prevLecture) continue;
+
+            const lectureChanged =
+              prevLecture.title !== currentLecture.title ||
+              prevLecture.type !== currentLecture.type ||
+              prevLecture.duration !== currentLecture.duration ||
+              !isEqual(prevLecture.content, currentLecture.content);
+
+            // if (lectureChanged) {
+            //   await updateLectureMutation({
+            //     lectureId: currentLecture.id,
+            //     data: {
+            //       title: currentLecture.title,
+            //       type: currentLecture.type,
+            //       duration: currentLecture.duration,
+            //       content: currentLecture.content,
+            //     },
+            //   });
+            // }
+          }
+        }
+
+        setAutoSaveStatus("Saved");
+      } catch (error) {
+        console.error(error);
+        setAutoSaveStatus("Error");
+      } finally {
+        prevSectionsRef.current = current;
+      }
+    };
+
+    saveChanges();
   }, [debouncedSections]);
 
   const form = useForm({
