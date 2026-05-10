@@ -47,6 +47,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // interface Lecture {
 //   id: string;
@@ -82,6 +83,7 @@ interface SortableSectionProps {
   onReorderlectures: (sectionId: string, newLectureOrder: string[]) => void;
   isDeleteSectionPending: boolean;
   isDeleteSectionVariables: string | undefined;
+  isCreateLecturePending: boolean;
 }
 
 export const SortableSection = ({
@@ -98,6 +100,7 @@ export const SortableSection = ({
   setOpenAccordionSections,
   isDeleteSectionPending,
   isDeleteSectionVariables,
+  isCreateLecturePending,
 }: SortableSectionProps) => {
   const [isOpen, setIsOpen] = useState(true);
 
@@ -305,6 +308,9 @@ export const SortableSection = ({
                         />
                       );
                     })}
+                    {isCreateLecturePending && (
+                      <Skeleton className="w-full h-12" />
+                    )}
                   </AnimatePresence>
                 </SortableContext>
               </DndContext>

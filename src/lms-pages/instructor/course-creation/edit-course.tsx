@@ -70,6 +70,10 @@ import {
   deleteSectionMutateFn,
   updateSectionMutateFn,
 } from "@/apis/section-api";
+import {
+  createLectureMutateFn,
+  updateLectureMutateFn,
+} from "@/apis/lecture-api";
 
 // ─── Lazy-load heavy section components ──────────────────────────────────────
 const IntendedLeanersSection = lazy(
@@ -128,11 +132,22 @@ export enum LectureType {
   ASSIGNMENT = "ASSIGNMENT",
 }
 
+// export interface Lecture {
+//   id: string;
+//   title: string;
+//   type: LectureType;
+//   duration: number;
+//   isExpanded: boolean;
+//   content?: LectureContent;
+//   hasContent?: boolean;
+// }
+
 export interface Lecture {
   id: string;
   title: string;
   type: LectureType;
   duration: number;
+  order: number;
   isExpanded: boolean;
   content?: LectureContent;
   hasContent?: boolean;
@@ -431,7 +446,27 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
       },
     });
 
-  const { mutateAsync: updateSectionMutation } = useMutation({
+  const { mutate: createLectureMutate, isPending: isCreateLecturePending } =
+    useMutation({
+      mutationFn: ({
+        sectionId,
+        type,
+      }: {
+        sectionId: string;
+        type: LectureType;
+      }) => createLectureMutateFn({ sectionId, type }),
+
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ["get-course-by-id", courseId],
+        });
+        toast("Lecture created", {
+          description: "The lecture has been created successfully.",
+        });
+      },
+    });
+
+  const { mutateAsync: updateSectionMutate } = useMutation({
     mutationFn: async ({
       sectionId,
       data,
@@ -439,6 +474,16 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
       sectionId: string;
       data: Partial<Section>;
     }) => updateSectionMutateFn(sectionId, data),
+  });
+
+  const { mutateAsync: updateLectureMutate } = useMutation({
+    mutationFn: async ({
+      lectureId,
+      data,
+    }: {
+      lectureId: string;
+      data: Partial<Lecture>;
+    }) => updateLectureMutateFn(lectureId, data),
   });
 
   const debouncedSections = useDebounce(sections, 1500);
@@ -472,7 +517,7 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
             prevSection.order !== currentSection.order;
 
           if (sectionChanged) {
-            await updateSectionMutation({
+            await updateSectionMutate({
               sectionId: currentSection.id,
               data: {
                 title: currentSection.title,
@@ -494,19 +539,21 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
               prevLecture.title !== currentLecture.title ||
               prevLecture.type !== currentLecture.type ||
               prevLecture.duration !== currentLecture.duration ||
+              prevLecture.order !== currentLecture.order ||
               !isEqual(prevLecture.content, currentLecture.content);
 
-            // if (lectureChanged) {
-            //   await updateLectureMutation({
-            //     lectureId: currentLecture.id,
-            //     data: {
-            //       title: currentLecture.title,
-            //       type: currentLecture.type,
-            //       duration: currentLecture.duration,
-            //       content: currentLecture.content,
-            //     },
-            //   });
-            // }
+            if (lectureChanged) {
+              await updateLectureMutate({
+                lectureId: currentLecture.id,
+                data: {
+                  title: currentLecture.title,
+                  type: currentLecture.type,
+                  duration: currentLecture.duration,
+                  order: currentLecture.order,
+                  content: currentLecture.content,
+                },
+              });
+            }
           }
         }
 
@@ -571,6 +618,7 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
           title: lecture.title,
           type: lecture.type,
           duration: video?.duration || 0,
+          order: lecture.order,
           isExpanded: false, // UI state default
           hasContent: !!(lecture.video || lecture.quiz),
           content: {
@@ -900,25 +948,27 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
 
   const onAddLecture = useCallback(
     (sectionId: string, type: Lecture["type"] = LectureType.VIDEO) => {
-      setSections((prevSec) =>
-        prevSec.map((sec) =>
-          sec.id === sectionId
-            ? {
-                ...sec,
-                lectures: [
-                  ...sec.lectures,
-                  {
-                    id: generateId(),
-                    title: "",
-                    type,
-                    duration: 0,
-                    isExpanded: true,
-                  },
-                ],
-              }
-            : sec,
-        ),
-      );
+      // setSections((prevSec) =>
+      //   prevSec.map((sec) =>
+      //     sec.id === sectionId
+      //       ? {
+      //           ...sec,
+      //           lectures: [
+      //             ...sec.lectures,
+      //             {
+      //               id: generateId(),
+      //               title: "",
+      //               type,
+      //               duration: 0,
+      //               isExpanded: true,
+      //             },
+      //           ],
+      //         }
+      //       : sec,
+      //   ),
+      // );
+
+      createLectureMutate({ sectionId, type });
     },
     [],
   );
@@ -1027,16 +1077,22 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
       setSections((prev) =>
         prev.map((s) => {
           if (s.id !== sectionId) return s;
+
+          const reorderedLectures = newLectureOrder
+            .map((lectureId) => s.lectures.find((lec) => lec.id === lectureId))
+            .filter(Boolean)
+            .map((lecture, index) => ({
+              ...lecture!,
+              order: index,
+            }));
+
           return {
             ...s,
-            lectures: newLectureOrder
-              .map((lectureId) =>
-                s.lectures.find((lec) => lec.id === lectureId),
-              )
-              .filter((lec): lec is Lecture => !!lec),
+            lectures: reorderedLectures,
           };
         }),
       );
+
       toast("Lecture reordered", {
         description: "Your curriculum has been updated.",
       });
@@ -1143,6 +1199,7 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
             isCreateSectionPending={isCreateSectionPending}
             isDeleteSectionPending={isDeleteSectionPending}
             isDeleteSectionVariables={isDeleteSectionVariables}
+            isCreateLecturePending={isCreateLecturePending}
           />
         );
       case ACTIVE_SECTIONS.LANDING_PAGE:
