@@ -71,6 +71,8 @@ interface CurriculumSectionProps {
   isDeleteSectionPending: boolean;
   isDeleteSectionVariables: string | undefined;
   isCreateLecturePending: boolean;
+  isDeleteLectureVariables: string | undefined;
+  isDeleteLecturePending: boolean;
 }
 
 const CurriculumSection: React.FC<CurriculumSectionProps> = ({
@@ -92,6 +94,8 @@ const CurriculumSection: React.FC<CurriculumSectionProps> = ({
   isDeleteSectionPending,
   isDeleteSectionVariables,
   isCreateLecturePending,
+  isDeleteLecturePending,
+  isDeleteLectureVariables,
 }) => {
   // Drag and drop handlers
   const sensors = useSensors(
@@ -164,6 +168,8 @@ const CurriculumSection: React.FC<CurriculumSectionProps> = ({
                   isDeleteSectionPending={isDeleteSectionPending}
                   isDeleteSectionVariables={isDeleteSectionVariables}
                   isCreateLecturePending={isCreateLecturePending}
+                  isDeleteLecturePending={isDeleteLecturePending}
+                  isDeleteLectureVariables={isDeleteLectureVariables}
                 />
               ))}
             </AnimatePresence>

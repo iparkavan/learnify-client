@@ -26,3 +26,8 @@ export const updateLectureMutateFn = async (
   );
   return res.data;
 };
+
+export const deleteLectureMutateFn = async (lectureId: string) => {
+  const res = await axiosClient.delete(`/instructor/lectures/${lectureId}`);
+  return res.data;
+};

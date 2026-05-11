@@ -1,7 +1,13 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { motion } from "framer-motion";
-import { GripVertical, Trash2, Upload, CheckCircle2 } from "lucide-react";
+import {
+  GripVertical,
+  Trash2,
+  Upload,
+  CheckCircle2,
+  Loader,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +34,8 @@ interface SortableLectureProps {
   ) => void;
   onDeleteLecture: (sectionId: string, lectureId: string) => void;
   onOpenContentModal: (sectionId: string, lecture: Lecture) => void;
+  isDeleteLecturePending: boolean;
+  isDeleteLectureVariables: string | undefined;
 }
 
 export const SortableLecture = ({
@@ -37,6 +45,8 @@ export const SortableLecture = ({
   onUpdateLecture,
   onDeleteLecture,
   onOpenContentModal,
+  isDeleteLecturePending,
+  isDeleteLectureVariables,
 }: SortableLectureProps) => {
   const {
     attributes,
@@ -51,6 +61,9 @@ export const SortableLecture = ({
     transform: CSS.Transform.toString(transform),
     transition,
   };
+
+  const isDeletingLecture =
+    isDeleteLecturePending && isDeleteLectureVariables === lecture.id;
 
   return (
     <motion.div
@@ -105,9 +118,14 @@ export const SortableLecture = ({
           variant="ghost"
           size="icon"
           onClick={() => onDeleteLecture(sectionId, lecture.id)}
+          disabled={isDeletingLecture}
           className="text-muted-foreground hover:text-destructive h-8 w-8"
         >
-          <Trash2 className="h-4 w-4" />
+          {isDeletingLecture ? (
+            <Loader className="animate-spin h-4 w-4" />
+          ) : (
+            <Trash2 className="h-4 w-4" />
+          )}
         </Button>
       </div>
     </motion.div>

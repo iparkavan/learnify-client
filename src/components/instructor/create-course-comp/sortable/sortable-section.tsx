@@ -84,6 +84,8 @@ interface SortableSectionProps {
   isDeleteSectionPending: boolean;
   isDeleteSectionVariables: string | undefined;
   isCreateLecturePending: boolean;
+  isDeleteLecturePending: boolean;
+  isDeleteLectureVariables: string | undefined;
 }
 
 export const SortableSection = ({
@@ -101,11 +103,16 @@ export const SortableSection = ({
   isDeleteSectionPending,
   isDeleteSectionVariables,
   isCreateLecturePending,
+  isDeleteLecturePending,
+  isDeleteLectureVariables,
 }: SortableSectionProps) => {
   const [isOpen, setIsOpen] = useState(true);
 
   const isDeletingSection =
     isDeleteSectionPending && isDeleteSectionVariables === section.id;
+
+  // const isDeletingLecture =
+  //   isDeleteLecturePending && isDeleteLectureVariables ===
 
   const {
     attributes,
@@ -303,8 +310,11 @@ export const SortableSection = ({
                             onOpenContentModal(sectionId, {
                               ...lec,
                               isExpanded: lec.isExpanded ?? false,
+                              order: lec.order,
                             })
                           }
+                          isDeleteLecturePending={isDeleteLecturePending}
+                          isDeleteLectureVariables={isDeleteLectureVariables}
                         />
                       );
                     })}

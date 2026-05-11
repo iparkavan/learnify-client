@@ -72,6 +72,7 @@ import {
 } from "@/apis/section-api";
 import {
   createLectureMutateFn,
+  deleteLectureMutateFn,
   updateLectureMutateFn,
 } from "@/apis/lecture-api";
 
@@ -466,7 +467,10 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
       },
     });
 
-  const { mutateAsync: updateSectionMutate } = useMutation({
+  const {
+    mutateAsync: updateSectionMutate,
+    isPending: isAutoSaveSectionPending,
+  } = useMutation({
     mutationFn: async ({
       sectionId,
       data,
@@ -476,7 +480,10 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
     }) => updateSectionMutateFn(sectionId, data),
   });
 
-  const { mutateAsync: updateLectureMutate } = useMutation({
+  const {
+    mutateAsync: updateLectureMutate,
+    isPending: isAutoSaveLecturePending,
+  } = useMutation({
     mutationFn: async ({
       lectureId,
       data,
@@ -484,6 +491,82 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
       lectureId: string;
       data: Partial<Lecture>;
     }) => updateLectureMutateFn(lectureId, data),
+  });
+
+  const {
+    mutate: deleteLectureMutate,
+    isPending: isDeleteLecturePending,
+    variables: isDeleteLectureVariables,
+  } = useMutation({
+    mutationFn: ({ lectureId }: { lectureId: string }) =>
+      deleteLectureMutateFn(lectureId),
+
+    onMutate: async ({ lectureId }) => {
+      await queryClient.cancelQueries({
+        queryKey: ["get-course-by-id", courseId],
+      });
+
+      // Snapshot previous cache
+      const previousData = queryClient.getQueryData<{ course: Course }>([
+        "get-course-by-id",
+        courseId,
+      ]);
+
+      if (previousData?.course?.sections) {
+        // Optimistically update cache
+        queryClient.setQueryData<{ course: Course }>(
+          ["get-course-by-id", courseId],
+          {
+            ...previousData,
+            course: {
+              ...previousData.course,
+              sections: previousData.course.sections.map((section) => ({
+                ...section,
+                lectures: section.lectures.filter(
+                  (lecture) => lecture.id !== lectureId,
+                ),
+              })),
+            },
+          },
+        );
+
+        // Optimistically update local UI state
+        setSections((prev) =>
+          prev.map((section) => ({
+            ...section,
+            lectures: section.lectures.filter(
+              (lecture) => lecture.id !== lectureId,
+            ),
+          })),
+        );
+      }
+
+      return { previousData };
+    },
+
+    onError: (err, variables, context) => {
+      // Rollback
+      if (context?.previousData) {
+        queryClient.setQueryData(
+          ["get-course-by-id", courseId],
+          context.previousData,
+        );
+
+        const rolledBackSections = mapSectionsToUI(
+          context.previousData.course.sections,
+        );
+
+        setSections(rolledBackSections);
+      }
+
+      toast.error("Lecture delete failed. UI restored.");
+    },
+
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["get-course-by-id", courseId],
+      });
+    },
   });
 
   const debouncedSections = useDebounce(sections, 1500);
@@ -993,16 +1076,17 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
 
   const onDeletelectureHandler = useCallback(
     (sectionId: string, lectureId: string) => {
-      setSections((prevSection) =>
-        prevSection.map((sec) =>
-          sec.id === sectionId
-            ? {
-                ...sec,
-                lectures: sec.lectures.filter((lec) => lec.id !== lectureId),
-              }
-            : sec,
-        ),
-      );
+      deleteLectureMutate({ lectureId });
+      // setSections((prevSection) =>
+      //   prevSection.map((sec) =>
+      //     sec.id === sectionId
+      //       ? {
+      //           ...sec,
+      //           lectures: sec.lectures.filter((lec) => lec.id !== lectureId),
+      //         }
+      //       : sec,
+      //   ),
+      // );
     },
     [],
   );
@@ -1162,6 +1246,11 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
     [isSavePending, sections, saveCourseMutate],
   );
 
+  const isFullCoursePending =
+    isAutoSaveUpdateCoursePending ||
+    isAutoSaveSectionPending ||
+    isAutoSaveLecturePending;
+
   // ─── Section renderer ─────────────────────────────────────────────────────
 
   const renderContent = () => {
@@ -1200,6 +1289,8 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
             isDeleteSectionPending={isDeleteSectionPending}
             isDeleteSectionVariables={isDeleteSectionVariables}
             isCreateLecturePending={isCreateLecturePending}
+            isDeleteLecturePending={isDeleteLecturePending}
+            isDeleteLectureVariables={isDeleteLectureVariables}
           />
         );
       case ACTIVE_SECTIONS.LANDING_PAGE:
@@ -1269,11 +1360,8 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
                       <Eye className="mr-2 h-4 w-4" />
                       Preview
                     </Button>
-                    <Button
-                      type="submit"
-                      disabled={isAutoSaveUpdateCoursePending}
-                    >
-                      {isAutoSaveUpdateCoursePending ? (
+                    <Button type="submit" disabled={isFullCoursePending}>
+                      {isFullCoursePending ? (
                         <>
                           <Loader className="animate-spin" /> Saving...
                         </>
