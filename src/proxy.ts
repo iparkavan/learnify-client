@@ -7,8 +7,9 @@ import {
   PROTECTED_ROUTES,
   RootRoute,
 } from "./utils/routes";
-import { ACCESS_TOKEN } from "./utils/contants";
+import { ACCESS_TOKEN, UserRole } from "./utils/contants";
 import { jwtVerify } from "jose";
+import { getRoleRedirect } from "./utils/get-role-redirect";
 
 const isProtected = (path: string) =>
   PROTECTED_ROUTES.some((route) => path.startsWith(route));
@@ -19,11 +20,52 @@ export async function proxy(req: NextRequest) {
   const token = req.cookies.get(ACCESS_TOKEN)?.value;
   const { pathname } = req.nextUrl;
 
-  // Auth routes (login/signup)
+  if (pathname === "/" && token) {
+    try {
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+
+      const { payload } = await jwtVerify(token, secret);
+
+      const role = payload.role as string;
+
+      if (role === UserRole.ADMIN) {
+        return NextResponse.redirect(new URL("/admin", req.url));
+      }
+
+      if (role === UserRole.INSTRUCTOR) {
+        return NextResponse.redirect(new URL("/instructor", req.url));
+      }
+    } catch {
+      // Invalid token -> continue normally
+    }
+  }
+
+  // // Auth routes (login/signup)
+  // if (token && isAuth(pathname)) {
+  //   const redir = req.nextUrl.searchParams.get("redir");
+  //   return NextResponse.redirect(new URL(redir || RootRoute, req.url));
+  // }
 
   if (token && isAuth(pathname)) {
-    const redir = req.nextUrl.searchParams.get("redir");
-    return NextResponse.redirect(new URL(redir || RootRoute, req.url));
+    try {
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+
+      const { payload } = await jwtVerify(token, secret);
+
+      const role = payload.role as string;
+
+      const redir = req.nextUrl.searchParams.get("redir");
+
+      return NextResponse.redirect(
+        new URL(redir || getRoleRedirect(role), req.url),
+      );
+    } catch {
+      const res = NextResponse.next();
+
+      res.cookies.delete(ACCESS_TOKEN);
+
+      return res;
+    }
   }
 
   // Protected routes

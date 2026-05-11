@@ -1,12 +1,51 @@
-// src/app/not-found.tsx
 "use client";
 
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { HomeIcon } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+
+import { jwtDecode } from "jwt-decode";
+import Cookies from "js-cookie";
+import { useEffect, useState } from "react";
+import { UserRole } from "@/utils/contants";
+
+type TokenPayload = {
+  role?: UserRole;
+};
 
 export default function NotFound() {
+  const [homeRoute, setHomeRoute] = useState("/");
+
+  useEffect(() => {
+    const token = Cookies.get("accessToken");
+
+    if (!token) return;
+
+    try {
+      const decoded = jwtDecode<TokenPayload>(token);
+
+      switch (decoded.role) {
+        case UserRole.ADMIN:
+          setHomeRoute("/admin");
+          break;
+
+        case UserRole.INSTRUCTOR:
+          setHomeRoute("/instructor");
+          break;
+
+        case UserRole.STUDENT:
+          setHomeRoute("/");
+          break;
+
+        default:
+          setHomeRoute("/");
+      }
+    } catch {
+      setHomeRoute("/");
+    }
+  }, []);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 text-center px-6">
       <motion.h1
@@ -33,7 +72,7 @@ export default function NotFound() {
         transition={{ delay: 0.4, duration: 0.5 }}
         className="mt-8"
       >
-        <Link href="/" className={buttonVariants()}>
+        <Link href={homeRoute} className={buttonVariants()}>
           <HomeIcon size={20} />
           Back to Home
         </Link>
