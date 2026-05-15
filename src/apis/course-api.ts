@@ -12,6 +12,8 @@ export const getAllCourses = async (): Promise<{}> => {
   return res.data;
 };
 
+// INSTRUCTOR COURSES API
+
 export const saveFullCourseMutateFn = async (payload: SaveCoursePayload) => {
   const res = await axiosClient.post(`/courses/save-full-course`, payload);
   return res.data;
@@ -48,4 +50,15 @@ export const getCourseByIdQueryFn = async ({
 }): Promise<GetCourseByIdResponse> => {
   const res = await axiosClient.get(`/instructor/courses/${courseId}`);
   return res.data;
+};
+
+export const deleteCourseByIdMutateFn = async (courseId: string) => {
+  const res = await axiosClient.delete(`/instructor/courses/${courseId}`);
+  return res.data;
+};
+
+export const getAllInstructorCoursesQueryFn = async () => {
+  const res = await axiosClient.get("/courses/get-instructor-courses");
+
+  return res.data.instructorCourse;
 };

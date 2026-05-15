@@ -16,6 +16,7 @@ export const courseSchema = z.object({
   language: z.string().min(1, "Please select a language"),
   price: z.string().min(1, "Please enter a price"),
   thumbnail: z.string().optional(),
+  thumbnailPublicId: z.string().optional(),
   promoVideo: z.string().optional(),
   welcomeMessage: z.string().optional(),
   congratsMessage: z.string().optional(),

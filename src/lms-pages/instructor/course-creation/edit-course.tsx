@@ -664,6 +664,7 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
       language: "English",
       price: "",
       thumbnail: "",
+      thumbnailPublicId: "",
       promoVideo: "",
       welcomeMessage: "",
       congratsMessage: "",
@@ -756,6 +757,7 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
       category: values.category,
       subcategory: values.subcategory,
       thumbnail: values.thumbnail,
+      thumbnailPublicId: values.thumbnailPublicId,
       promoVideo: values.promoVideo,
       level: values.level,
       language: values.language,
@@ -895,6 +897,7 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
         form.setValue("thumbnail", res.data.secure_url, {
           shouldDirty: true,
         });
+        form.setValue("thumbnailPublicId", res.data.public_id);
         toast("Image uploaded!", {
           description: "Your course image uploaded successfully.",
         });

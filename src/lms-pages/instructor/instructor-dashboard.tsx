@@ -17,6 +17,7 @@ import {
   Play,
   Clock,
   Star,
+  Trash2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -28,6 +29,15 @@ import Link from "next/link";
 import InstructorNavbar from "@/components/instructor/common/instructor-navbar";
 import { Course } from "@/types/course-types";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  deleteCourseByIdMutateFn,
+  getAllInstructorCoursesQueryFn,
+} from "@/apis/course-api";
+import { MouseEvent, useEffect } from "react";
+import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -152,13 +162,55 @@ const recentActivity = [
 ];
 
 interface InstructorDashboardProps {
-  courses: Course[];
+  initialCourses: Course[];
 }
 
 const InstructorDashboard: React.FC<InstructorDashboardProps> = ({
-  courses,
+  initialCourses,
 }) => {
   const router = useRouter();
+
+  const queryClient = useQueryClient();
+
+  const { data: courses, isLoading } = useQuery({
+    queryKey: ["instructor-courses"],
+
+    queryFn: getAllInstructorCoursesQueryFn,
+
+    initialData: initialCourses,
+  });
+
+  const {
+    mutate: deleteCourseMutateFn,
+    isPending: isDeleteCoursePending,
+    variables: deletingCourseId,
+  } = useMutation({
+    mutationFn: (courseId: string) => deleteCourseByIdMutateFn(courseId),
+    onSuccess: () => {
+      toast.success("Course deleted successfully");
+
+      queryClient.invalidateQueries({
+        queryKey: ["instructor-courses"],
+      });
+
+      // router.refresh();
+    },
+    onError: () => {
+      toast.error("Failed to delete course");
+    },
+  });
+
+  // useEffect(() => {
+  //   router.refresh();
+  // }, []);
+
+  const deleteCourseHandler = (
+    e: MouseEvent<HTMLDivElement>,
+    courseId: string,
+  ) => {
+    e.stopPropagation();
+    deleteCourseMutateFn(courseId);
+  };
 
   return (
     <div className="">
@@ -226,111 +278,162 @@ const InstructorDashboard: React.FC<InstructorDashboardProps> = ({
                   </Link>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {courses.map((course, index) => (
-                    <motion.div
-                      key={course.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      onClick={() =>
-                        router.push(`/instructor/courses/${course.id}`)
-                      }
-                      className="group flex gap-4 p-4 rounded-xl border border-border/50 bg-background/50 hover:bg-secondary/50 hover:border-primary/30 transition-all duration-300"
-                    >
-                      <div className="relative w-32 h-20 rounded-lg overflow-hidden shrink-0">
-                        <img
-                          src={course.thumbnail}
-                          alt={course.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                        {course.status === "draft" && (
-                          <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
-                            <span className="text-xs font-medium text-muted-foreground">
-                              Draft
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <h3 className="font-semibold text-foreground truncate">
-                              {course.title}
-                            </h3>
-                            <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <Users className="h-3.5 w-3.5" />
-                                {course.students} students
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <DollarSign className="h-3.5 w-3.5" />
-                                {course.revenue}
-                              </span>
-                              {course.rating > 0 && (
-                                <span className="flex items-center gap-1">
-                                  <Star className="h-3.5 w-3.5 fill-yellow-500 text-yellow-500" />
-                                  {course.rating}
-                                </span>
-                              )}
+                  {courses.map((course: Course, index: number) => (
+                    <div key={course.id}>
+                      {isDeleteCoursePending &&
+                      deletingCourseId === course.id ? (
+                        <div className="flex gap-4 p-4 rounded-xl border border-border/50 bg-background/50">
+                          {/* Thumbnail */}
+                          <Skeleton className="w-32 h-20 rounded-lg shrink-0" />
+
+                          <div className="flex-1 space-y-3">
+                            {/* Title + Badge */}
+                            <div className="flex items-start justify-between">
+                              <div className="space-y-2">
+                                <Skeleton className="h-5 w-48" />
+
+                                <div className="flex items-center gap-3">
+                                  <Skeleton className="h-4 w-20" />
+                                  <Skeleton className="h-4 w-16" />
+                                  <Skeleton className="h-4 w-12" />
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <Skeleton className="h-6 w-20 rounded-full" />
+                                <Skeleton className="h-8 w-8 rounded-md" />
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              variant={
-                                course.status === "published"
-                                  ? "default"
-                                  : "secondary"
-                              }
-                              className={
-                                course.status === "published"
-                                  ? "bg-green-500/10 text-green-600 border-green-500/20"
-                                  : ""
-                              }
-                            >
-                              {course.status}
-                            </Badge>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8"
-                                >
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent
-                                align="end"
-                                className="bg-popover border-border"
-                              >
-                                <DropdownMenuItem>
-                                  <Eye className="mr-2 h-4 w-4" /> Preview
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <Edit className="mr-2 h-4 w-4" /> Edit
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+
+                            {/* Progress */}
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <Skeleton className="h-3 w-20" />
+                                <Skeleton className="h-3 w-10" />
+                              </div>
+
+                              <Skeleton className="h-2 w-full rounded-full" />
+                            </div>
                           </div>
                         </div>
-                        {course.status === "draft" && (
-                          <div className="mt-3">
-                            <div className="flex items-center justify-between text-xs mb-1">
-                              <span className="text-muted-foreground">
-                                Completion
-                              </span>
-                              <span className="text-foreground font-medium">
-                                {course.progress}%
-                              </span>
-                            </div>
-                            <Progress
-                              value={course.progress}
-                              className="h-1.5"
-                            />
+                      ) : (
+                        <motion.div
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          onClick={() =>
+                            router.push(`/instructor/courses/${course.id}`)
+                          }
+                          className="group flex gap-4 p-4 rounded-xl border border-border/50 bg-background/50 hover:bg-secondary/50 hover:border-primary/30 transition-all duration-300"
+                        >
+                          <div className="relative w-32 h-20 rounded-lg overflow-hidden shrink-0">
+                            {course.thumbnail ? (
+                              <Image
+                                src={course.thumbnail}
+                                alt={course.title}
+                                width={300}
+                                height={200}
+                              />
+                            ) : (
+                              <div>No image</div>
+                            )}
+                            {course.status === "draft" && (
+                              <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
+                                <span className="text-xs font-medium text-muted-foreground">
+                                  Draft
+                                </span>
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </motion.div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <h3 className="font-semibold text-foreground truncate">
+                                  {course.title}
+                                </h3>
+                                <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                                  <span className="flex items-center gap-1">
+                                    <Users className="h-3.5 w-3.5" />
+                                    {course.students} students
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <DollarSign className="h-3.5 w-3.5" />
+                                    {course.revenue}
+                                  </span>
+                                  {course.rating > 0 && (
+                                    <span className="flex items-center gap-1">
+                                      <Star className="h-3.5 w-3.5 fill-yellow-500 text-yellow-500" />
+                                      {course.rating}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge
+                                  variant={
+                                    course.status === "published"
+                                      ? "default"
+                                      : "secondary"
+                                  }
+                                  className={
+                                    course.status === "published"
+                                      ? "bg-green-500/10 text-green-600 border-green-500/20"
+                                      : ""
+                                  }
+                                >
+                                  {course.status}
+                                </Badge>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                    >
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent
+                                    align="end"
+                                    className="bg-popover border-border"
+                                  >
+                                    <DropdownMenuItem>
+                                      <Eye className="mr-2 h-4 w-4" /> Preview
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                      <Edit className="mr-2 h-4 w-4" /> Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={(e) =>
+                                        deleteCourseHandler(e, course.id)
+                                      }
+                                    >
+                                      <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </div>
+                            {course.status === "draft" && (
+                              <div className="mt-3">
+                                <div className="flex items-center justify-between text-xs mb-1">
+                                  <span className="text-muted-foreground">
+                                    Completion
+                                  </span>
+                                  <span className="text-foreground font-medium">
+                                    {course.progress}%
+                                  </span>
+                                </div>
+                                <Progress
+                                  value={course.progress}
+                                  className="h-1.5"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
                   ))}
                 </CardContent>
               </Card>

@@ -23,7 +23,7 @@ const page = async () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <InstructorDashboard courses={courses.instructorCourse} />
+      <InstructorDashboard initialCourses={courses.instructorCourse} />
     </div>
   );
 };

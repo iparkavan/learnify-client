@@ -74,6 +74,7 @@ export interface Course {
   published: boolean;
   totalDuration: number;
   totalLectures: number;
+  status: string;
   sections: Section[];
 
   seoTitle?: string | null;
