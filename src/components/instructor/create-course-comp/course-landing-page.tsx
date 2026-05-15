@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { MouseEvent, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Input } from "@/components/ui/input";
@@ -54,6 +54,7 @@ interface CourseLandingPageSectionProps {
   } | null;
   onRemovePromoVideo: () => void;
   videoUploadProgress: number;
+  imageInputRef: null;
 }
 
 const CourseLandingPageSection: React.FC<CourseLandingPageSectionProps> = ({
@@ -70,6 +71,7 @@ const CourseLandingPageSection: React.FC<CourseLandingPageSectionProps> = ({
   promoVideo,
   onRemovePromoVideo,
   videoUploadProgress,
+  imageInputRef,
 }) => {
   return (
     <motion.div
@@ -293,6 +295,7 @@ const CourseLandingPageSection: React.FC<CourseLandingPageSectionProps> = ({
             </div>
             <div className="relative">
               <input
+                ref={imageInputRef}
                 type="file"
                 accept="image/jpeg,image/jpg,image/png,image/gif"
                 onChange={onCourseImageUpload}

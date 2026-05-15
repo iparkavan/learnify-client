@@ -5,6 +5,7 @@ export interface Course {
   slug: string;
   description: string;
   thumbnail: string;
+  thumbnailPublicId: string;
   price: number;
   level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
   categoryId: string;

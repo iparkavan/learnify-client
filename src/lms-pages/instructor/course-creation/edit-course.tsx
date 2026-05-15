@@ -344,6 +344,7 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   const prevRef = useRef<any>(null);
   const isFirstRender = useRef(true);
   const latestSaveRef = useRef(0);
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
   const prevSectionsRef = useRef<Section[]>([]);
 
   const queryClient = useQueryClient();
@@ -681,6 +682,7 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
     language: "English",
     price: c.price?.toString() || "",
     thumbnail: c.thumbnail || "",
+    thumbnailPublicId: c.thumbnailPublicId || "",
     promoVideo: c.promoVideo || "",
     welcomeMessage: "",
     congratsMessage: "",
@@ -860,26 +862,114 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
   );
 
   // ─── Handlers (all memoized with useCallback) ─────────────────────────────
+  // const handleCourseImageUpload = useCallback(
+  //   async (e: React.ChangeEvent<HTMLInputElement>) => {
+  //     const file = e.target.files?.[0];
+  //     if (!file) return;
+
+  //     if (!file.type.startsWith("image/")) {
+  //       toast("Invalid file type", {
+  //         description: "Please upload an image file (jpg, jpeg, gif, or png).",
+  //       });
+  //       return;
+  //     }
+
+  //     setImageUploading(true);
+  //     try {
+  //       const sigRes = await axiosClient.get(
+  //         "/cloudinary-signature?folder=courses/thumbnails",
+  //       );
+  //       const sigData = sigRes.data;
+
+  //       const formData = new FormData();
+  //       formData.append("file", file);
+  //       formData.append("api_key", sigData.apiKey);
+  //       formData.append("timestamp", sigData.timestamp);
+  //       formData.append("signature", sigData.signature);
+  //       formData.append("folder", sigData.folder);
+  //       formData.append("resource_type", "image");
+
+  //       const res = await axios.post<CloudinaryUploadResponse>(
+  //         `https://api.cloudinary.com/v1_1/${sigData.cloudName}/image/upload`,
+  //         formData,
+  //       );
+
+  //       const preview = URL.createObjectURL(file);
+  //       setCourseImage({ file, preview });
+  //       form.setValue("thumbnail", res.data.secure_url, {
+  //         shouldDirty: true,
+  //       });
+  //       form.setValue("thumbnailPublicId", res.data.public_id);
+  //       toast("Image uploaded!", {
+  //         description: "Your course image uploaded successfully.",
+  //       });
+  //     } catch (error) {
+  //       console.error("Image upload failed", error);
+  //       toast("Upload failed", {
+  //         description: "Image upload failed. Try again.",
+  //       });
+  //     } finally {
+  //       setImageUploading(false);
+  //     }
+  //   },
+  //   [form],
+  // );
+
   const handleCourseImageUpload = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
+
       if (!file) return;
 
+      // validate image
       if (!file.type.startsWith("image/")) {
         toast("Invalid file type", {
-          description: "Please upload an image file (jpg, jpeg, gif, or png).",
+          description: "Please upload an image file.",
         });
+
+        if (imageInputRef.current) {
+          imageInputRef.current.value = "";
+        }
+
         return;
       }
 
-      setImageUploading(true);
       try {
+        setImageUploading(true);
+
+        // cleanup previous blob preview
+        if (courseImage?.preview?.startsWith("blob:")) {
+          URL.revokeObjectURL(courseImage.preview);
+        }
+
+        // delete old cloudinary image if exists
+        const oldPublicId = form.getValues("thumbnailPublicId");
+
+        if (oldPublicId) {
+          try {
+            await axiosClient.delete(
+              "/instructor/cloudinary/thumbnail/delete-image",
+              {
+                data: {
+                  publicId: oldPublicId,
+                },
+              },
+            );
+          } catch (deleteError) {
+            console.error("Old image delete failed", deleteError);
+          }
+        }
+
+        // get cloudinary signature
         const sigRes = await axiosClient.get(
           "/cloudinary-signature?folder=courses/thumbnails",
         );
+
         const sigData = sigRes.data;
 
+        // upload image to cloudinary
         const formData = new FormData();
+
         formData.append("file", file);
         formData.append("api_key", sigData.apiKey);
         formData.append("timestamp", sigData.timestamp);
@@ -892,25 +982,53 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
           formData,
         );
 
+        // create local preview
         const preview = URL.createObjectURL(file);
-        setCourseImage({ file, preview });
+
+        // update local state
+        setCourseImage({
+          file,
+          preview,
+        });
+
+        // update form
         form.setValue("thumbnail", res.data.secure_url, {
           shouldDirty: true,
         });
-        form.setValue("thumbnailPublicId", res.data.public_id);
+
+        form.setValue("thumbnailPublicId", res.data.public_id, {
+          shouldDirty: true,
+        });
+
+        // optional immediate autosave
+        await autoSaveUpdateCourseMutate({
+          courseId,
+          data: {
+            thumbnail: res.data.secure_url,
+            thumbnailPublicId: res.data.public_id,
+          },
+        });
+
         toast("Image uploaded!", {
-          description: "Your course image uploaded successfully.",
+          description: "Course image uploaded successfully.",
         });
       } catch (error) {
         console.error("Image upload failed", error);
+
         toast("Upload failed", {
           description: "Image upload failed. Try again.",
         });
       } finally {
         setImageUploading(false);
+
+        // VERY IMPORTANT
+        // allows selecting same image again
+        if (imageInputRef.current) {
+          imageInputRef.current.value = "";
+        }
       }
     },
-    [form],
+    [courseImage?.preview, form, courseId, autoSaveUpdateCourseMutate],
   );
 
   const handleVideoUpload = useCallback(
@@ -968,10 +1086,50 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
     [form],
   );
 
-  const removeCourseImage = useCallback(() => {
-    if (courseImage?.preview) URL.revokeObjectURL(courseImage.preview);
-    setCourseImage(null);
-  }, [courseImage?.preview]);
+  const removeCourseImage = useCallback(async () => {
+    try {
+      const publicId = form.getValues("thumbnailPublicId");
+
+      if (publicId) {
+        await axiosClient.delete(
+          "/instructor/cloudinary/thumbnail/delete-image",
+          {
+            data: {
+              publicId,
+            },
+          },
+        );
+      }
+
+      // cleanup blob preview
+      if (courseImage?.preview?.startsWith("blob:")) {
+        URL.revokeObjectURL(courseImage.preview);
+      }
+
+      // clear local state
+      setCourseImage(null);
+
+      // clear form
+      form.setValue("thumbnail", "");
+      form.setValue("thumbnailPublicId", "");
+
+      // reset input
+      if (imageInputRef.current) {
+        imageInputRef.current.value = "";
+      }
+
+      toast("Image deleted successfully");
+    } catch (error) {
+      console.error(error);
+
+      toast("Failed to delete image");
+    }
+  }, [courseImage?.preview, form]);
+
+  // const removeCourseImage = useCallback(() => {
+  //   if (courseImage?.preview) URL.revokeObjectURL(courseImage.preview);
+  //   setCourseImage(null);
+  // }, [courseImage?.preview]);
 
   const removePromoVideo = useCallback(() => {
     setPromoVideo(null);
@@ -1312,6 +1470,7 @@ const EditCourse: React.FC<CreateCourseProps> = ({ courseId }) => {
             promoVideo={promoVideo}
             onRemovePromoVideo={removePromoVideo}
             videoUploadProgress={videoUploadProgress}
+            imageInputRef={imageInputRef}
           />
         );
       case ACTIVE_SECTIONS.PRICING:

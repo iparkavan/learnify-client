@@ -229,7 +229,7 @@ export const LectureContentModal = ({
     if (!confirmDelete) return;
 
     try {
-      await axiosClient.delete("/lectures/delete-video", {
+      await axiosClient.delete("/instructor/lectures/delete-video", {
         data: { publicId: videoContent.publicId },
       });
 
